@@ -2,25 +2,33 @@ FROM tomcat:9.0
 
 MAINTAINER Jahia Devops team <paas@jahia.com>
 
-ARG BASE_URL="http://downloads.jahia.com/downloads/jahia/jahia7.3.4/Jahia-EnterpriseDistribution-7.3.4.1-r60321.4663.jar"
-ARG PROCESSING_SERVER="true"
-ARG OPERATING_MODE="production"
-ARG XMX="2G"
-ARG MAX_UPLOAD="268435456"
-ARG SUPER_USER_PASSWORD="root"
-ARG LIBREOFFICE="false"
-ARG FFMPEG="false"
-ARG DEBUG_TOOLS="false"
+
+# Image components
+ARG BASE_URL="https://downloads.jahia.com/downloads/jahia/jahia7.3.4/Jahia-EnterpriseDistribution-7.3.4.1-r60321.4663.jar"
 ARG DBMS_TYPE="mariadb"
+ARG DEBUG_TOOLS="false"
+ARG FFMPEG="false"
+ARG HEALTHCHECK_VER="1.0.10"
+ARG LIBREOFFICE="false"
+ARG MAVEN_VER="3.6.3"
+
+# Jahia's properties
+ARG JMANAGER_PASS="fakepassword"
+ARG JMANAGER_USER="jahia"
+ARG MAX_UPLOAD="268435456"
+ARG OPERATING_MODE="development"
+ARG PROCESSING_SERVER="true"
+ARG SUPER_USER_PASSWORD="fakepassword"
+ARG XMX="2G"
+
+# Database's properties
 ARG DB_HOST="mariadb"
 ARG DB_NAME="jahia"
-ARG DB_USER="root"
-ARG DB_PASS="hophop"
-ARG JMANAGER_USER="manager"
-ARG JMANAGER_PASS="password"
+ARG DB_USER="jahia"
+ARG DB_PASS="fakepassword"
 ARG MODULES_BASE_URL="https://store.jahia.com/cms/mavenproxy/private-app-store/org/jahia/modules"
-ARG HEALTHCHECK_VER="1.0.10"
-ARG MAVEN_VER="3.6.3"
+
+
 
 ENV FACTORY_DATA="/data/digital-factory-data"
 ENV FACTORY_CONFIG="/usr/local/tomcat/conf/digital-factory-config"
@@ -32,8 +40,6 @@ ENV CATALINA_BASE="/usr/local/tomcat" CATALINA_HOME="/usr/local/tomcat" CATALINA
 
 ENV DBMS_TYPE="$DBMS_TYPE" DB_HOST="$DB_HOST" DB_NAME="$DB_NAME" DB_USER="$DB_USER" DB_PASS="$DB_PASS"
 ENV JMANAGER_USER="$JMANAGER_USER" JMANAGER_PASS="$JMANAGER_PASS" SUPER_USER_PASSWORD="$SUPER_USER_PASSWORD"
-
-ENV KARAF_SHELL_PORT="8101"
 
 
 ADD config_mariadb.xml /tmp
