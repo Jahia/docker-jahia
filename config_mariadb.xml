@@ -65,7 +65,6 @@
     </com.izforge.izpack.panels.UserInputPanel>
     <com.izforge.izpack.panels.UserInputPanel id="cluster">
         <userInput>
-            <entry key="dbSettings.dbms.fileDataStorePath" value="${DS_PATH}"/>
             <entry key="cluster.processingServer" value="true"/>
             <entry key="cluster.node.ipAddress" value="&lt;auto&gt;"/>
             <entry key="cluster.node.port" value="7870"/>

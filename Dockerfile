@@ -32,7 +32,7 @@ ARG DB_USER="jahia"
 ARG DB_PASS="fakepassword"
 
 
-
+ENV RESTORE_MODULE_STATES="true"
 ENV FACTORY_DATA="/data/digital-factory-data"
 ENV FACTORY_CONFIG="/usr/local/tomcat/conf/digital-factory-config"
 ENV PROCESSING_SERVER="$PROCESSING_SERVER"
@@ -57,6 +57,10 @@ ADD reset-jahia-tools-manager-password.py /usr/local/bin
 
 RUN apt update \
     && packages="imagemagick python3 jq ncat" \
+    && case "$DBMS_TYPE" in \
+        "mariadb") packages="$packages mariadb-client";; \
+        "postgresql") packages="$packages postgresql-client";; \
+       esac \
     && if $DEBUG_TOOLS; then \
         packages="$packages vim binutils"; \
        fi \
@@ -69,12 +73,13 @@ RUN apt update \
     && apt-get install -y --no-install-recommends \
         $packages \
     && rm -rf /var/lib/apt/lists/*
-
-
-RUN printf 'Start Jahia\s installation...\n' \
-    && wget --progress=dot:giga -O installer.jar $BASE_URL \
-    && wget --progress=dot:giga -O maven.zip $MAVEN_BASE_URL/$MAVEN_VER/binaries/apache-maven-$MAVEN_VER-bin.zip \
+ADD installer.jar /tmp
+ADD maven.zip /tmp
+RUN printf "Start Jahia's installation...\n" \
+    #&& wget --progress=dot:giga -O installer.jar $BASE_URL \
+    #&& wget --progress=dot:giga -O maven.zip $MAVEN_BASE_URL/$MAVEN_VER/binaries/apache-maven-$MAVEN_VER-bin.zip \
     && sed -e 's/${MAVEN_VER}/'$MAVEN_VER'/' \
+        -e 's/${DS_IN_DB}/'$DS_IN_DB'/' \
         -i /tmp/config_$DBMS_TYPE.xml \
     && java -jar installer.jar config_$DBMS_TYPE.xml \
     && unzip -q maven.zip -d /opt \

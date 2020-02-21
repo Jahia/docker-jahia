@@ -10,9 +10,9 @@ sed -e 's,${FACTORY_DATA},'$FACTORY_DATA',' \
     -e "s,^#\s\?\s*\(svnPath\s*=\).*,\1 /usr/bin/svn," \
     -e "s,^#\s\?\s*\(mvnPath\s*=\).*,\1 $(find /opt -type f -executable -name mvn)," \
     -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
-if $DS_IN_DB; then
+if [ "$DS_IN_DB" == "true" ]; then
     echo " -- Datastore have to be store in DB"
-    sed -e "s,^#\?\s*\(jahia.jackrabbit.datastore.path\s*=\).*,#\1 $DS_PATH," \
+    sed -e 's,^#\?\s*\(jahia.jackrabbit.datastore.path\s*=\).*,#\1 ${jahia.jackrabbit.home}/datastore,' \
         -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
 else
     echo " -- Datastore have to be store in $DS_PATH"
@@ -61,21 +61,25 @@ sed 's/${JMANAGER_USER}/'$JMANAGER_USER'/' -i /usr/local/tomcat/conf/digital-fac
 
 
 echo "Update setenv.sh"
-echo 'export JAVA_OPTS="$JAVA_OPTS -Xmx$XMX -DDB_HOST=$DB_HOST -DDB_PASS=$DB_PASS -DDB_NAME=$DB_NAME -DDB_USER=$DB_USER"' \
-    > /usr/local/tomcat/bin/setenv.sh
-echo "JMX_OPTS=\-XX:+UseParallelGC -Xlog:gc::time,uptime,level,pid,tid,tags -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=7199 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -XX:+HeapDumpOnOutOfMemoryError -XX:+PrintConcurrentLocks -XX:SurvivorRatio=8" >> /usr/local/tomcat/bin/setenv.sh
-echo "export JAHIA_JAVA_XMX=$XMX XMX=$XMX" >> /usr/local/tomcat/bin/setenv.sh
+echo "JAVA_OPTS=\"-XX:+UseParallelGC -Xlog:gc::time,uptime,level,pid,tid,tags -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=7199 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -XX:+HeapDumpOnOutOfMemoryError -XX:+PrintConcurrentLocks -XX:SurvivorRatio=8\"" > /usr/local/tomcat/bin/setenv.sh
+echo 'export JAVA_OPTS="$JAVA_OPTS -Xmx'$XMX' -DDB_HOST='$DB_HOST' -DDB_PASS='$DB_PASS' -DDB_NAME='$DB_NAME' -DDB_USER='$DB_USER'"' \
+    >> /usr/local/tomcat/bin/setenv.sh
+echo "export XMX=$XMX" >> /usr/local/tomcat/bin/setenv.sh
 chmod +x /usr/local/tomcat/bin/setenv.sh \
 
 echo "Update root's password..."
 echo "$SUPER_USER_PASSWORD" > $FACTORY_DATA/root.pwd
 
 
-
-
 case "$DBMS_TYPE" in
-    "mariadb") DB_PORT="3306";;
-    "postgresql") DB_PORT="5432";;
+    "mariadb") 
+        DB_PORT="3306"
+        testdb_result="$(mysql -u $DB_USER -p$DB_PASS -h $DB_HOST -D jahia -e "select count(REVISION_ID) from JR_J_LOCAL_REVISIONS;" -s)"
+        ;;
+    "postgresql")
+        DB_PORT="5432"
+        testdb_result="$(PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "select count(REVISION_ID) from JR_J_LOCAL_REVISIONS;" -tAq)"
+        ;;
 esac
 
 
@@ -90,6 +94,18 @@ for n in {1..667}; do
     fi
     sleep 1
 done
+
+if [ $testdb_result -eq 0 ]; then
+    echo " -- Database is empty, do not try to restore module states"
+    RESTORE_MODULE_STATES="false"
+fi
+
+if [ "$RESTORE_MODULE_STATES" == "true" ]; then
+    echo " -- Restore module states have been asked"
+    touch "$FACTORY_DATA/[persisted-bundles].dorestore"
+else
+    echo " -- Restore module states is not needed"
+fi
 
 
 
