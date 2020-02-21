@@ -52,8 +52,11 @@ sed 's/${JMANAGER_USER}/'$JMANAGER_USER'/' -i /usr/local/tomcat/conf/digital-fac
 
 
 echo "Update setenv.sh"
-echo "JMX_OPTS=\-XX:+UseParallelGC" >> /usr/local/tomcat/bin/setenv.sh
-echo "export JAHIA_JAVA_XMX=$XMX" >> /usr/local/tomcat/bin/setenv.sh
+echo 'export JAVA_OPTS="$JAVA_OPTS -Xmx$XMX -DDB_HOST=$DB_HOST -DDB_PASS=$DB_PASS -DDB_NAME=$DB_NAME -DDB_USER=$DB_USER"' \
+    > /usr/local/tomcat/bin/setenv.sh
+echo "JMX_OPTS=\-XX:+UseParallelGC -Xlog:gc::time,uptime,level,pid,tid,tags -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=7199 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -XX:+HeapDumpOnOutOfMemoryError -XX:+PrintConcurrentLocks -XX:SurvivorRatio=8" >> /usr/local/tomcat/bin/setenv.sh
+echo "export JAHIA_JAVA_XMX=$XMX XMX=$XMX" >> /usr/local/tomcat/bin/setenv.sh
+chmod +x /usr/local/tomcat/bin/setenv.sh \
 
 echo "Update root's password..."
 echo "$SUPER_USER_PASSWORD" > $FACTORY_DATA/root.pwd
