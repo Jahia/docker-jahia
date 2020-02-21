@@ -15,11 +15,19 @@ if (which ffmpeg > /dev/null); then
     sed -e "s/^#\?\s*\(jahia.dm.thumbnails.video.enabled\s*=\).*/\1 true/" \
         -e "s,^#\?\s*\(jahia.dm.thumbnails.video.ffmpeg\s*=\).*,\1 /usr/bin/ffmpeg," \
         -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
+    else
+    echo " -- ffmpeg is not present"
+    sed -e "s/^#\?\s*\(jahia.dm.thumbnails.video.enabled\s*=\).*/\1 false/" \
+        -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
 fi
 if (which soffice > /dev/null); then
     echo " -- libreoffice is present"
     sed -e "s/^#\?\s*\(documentConverter.enabled\s*=\).*/\1 true/" \
         -e "s,^#\?\s*\(documentConverter.officeHome\s*=\).*,\1 /usr/lib/libreoffice," \
+        -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
+    else
+    echo " -- libreoffice is not present"
+    sed -e "s/^#\?\s*\(documentConverter.enabled\s*=\).*/\1 false/" \
         -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
 fi
 
