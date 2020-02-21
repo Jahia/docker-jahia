@@ -11,22 +11,23 @@ ARG FFMPEG="false"
 ARG HEALTHCHECK_VER="1.0.10"
 ARG LIBREOFFICE="false"
 ARG MAVEN_VER="3.6.3"
+ARG MAVEN_BASE_URL="https://mirrors.ircam.fr/pub/apache/maven/maven-3"
+ARG MODULES_BASE_URL="https://store.jahia.com/cms/mavenproxy/private-app-store/org/jahia/modules"
 
 # Jahia's properties
 ARG JMANAGER_PASS="fakepassword"
 ARG JMANAGER_USER="jahia"
 ARG MAX_UPLOAD="268435456"
 ARG OPERATING_MODE="development"
-ARG PROCESSING_SERVER="true"
+ARG PROCESSING_SERVER="false"
 ARG SUPER_USER_PASSWORD="fakepassword"
-ARG XMX="2G"
+ARG XMX="2048M"
 
 # Database's properties
 ARG DB_HOST="mariadb"
 ARG DB_NAME="jahia"
 ARG DB_USER="jahia"
 ARG DB_PASS="fakepassword"
-ARG MODULES_BASE_URL="https://store.jahia.com/cms/mavenproxy/private-app-store/org/jahia/modules"
 
 
 
@@ -48,12 +49,6 @@ ADD entrypoint.sh /
 WORKDIR /tmp
 
 
-
-ADD installer.jar /tmp
-ADD maven.zip /tmp
-
-
-
 ADD reset-jahia-tools-manager-password.py /usr/local/bin
 
 
@@ -72,20 +67,16 @@ RUN apt update \
         $packages \
     && rm -rf /var/lib/apt/lists/*
 
-RUN printf 'hop hop hop\n' \
-    #&& wget --progress=dot:giga -O installer.jar $BASE_URL \
-    #&& wget --progress=dot:giga -O maven.zip https://mirrors.ircam.fr/pub/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip \
+RUN printf 'Start Jahia\s installation...\n' \
+    && wget --progress=dot:giga -O installer.jar $BASE_URL \
+    && wget --progress=dot:giga -O maven.zip $MAVEN_BASE_URL/$MAVEN_VER/binaries/apache-maven-$MAVEN_VER-bin.zip \
     && sed -e 's/${MAVEN_VER}/'$MAVEN_VER'/' \
-        #-e 's,${LICENSE_PATH},'$FACTORY_CONFIG/jahia/license.xml',' \
         -i /tmp/config_$DBMS_TYPE.xml \
     && java -jar installer.jar config_$DBMS_TYPE.xml \
     && unzip -q maven.zip -d /opt \
     && rm -f installer.jar config_*.xml maven.zip \
     && mv /data/jahia/tomcat/webapps/* /usr/local/tomcat/webapps \
     && mv /data/jahia/tomcat/lib/* /usr/local/tomcat/lib/ \
-    && echo 'export JAVA_OPTS="$JAVA_OPTS -DDB_HOST=$DB_HOST -DDB_PASS=$DB_PASS -DDB_NAME=$DB_NAME -DDB_USER=$DB_USER"' \
-                >> /usr/local/tomcat/bin/setenv.sh \
-    && chmod +x /usr/local/tomcat/bin/setenv.sh \
     && chmod +x /entrypoint.sh \
     && sed -e "s#common.loader=\"\\\$#common.loader=\"/usr/local/tomcat/conf/digital-factory-config\",\"\$#g" \
         -i /usr/local/tomcat/conf/catalina.properties \
