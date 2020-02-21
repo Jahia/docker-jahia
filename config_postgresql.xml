@@ -38,7 +38,7 @@
             <entry key="dbSettings.connection.url.postgresql" value="jdbc:postgresql://${DB_HOST}/${DB_NAME}"/>
             <entry key="dbSettings.dbms.createTables" value="false"/>
             <entry key="dbSettings.connection.username" value="${DB_USER}"/>
-            <entry key="dbSettings.dbms.storeFilesInDB" value="true"/>
+            <entry key="dbSettings.dbms.storeFilesInDB" value="${DS_IN_DB}"/>
             <entry key="dbSettings.connection.password" value="${DB_PASS}"/>
         </userInput>
     </com.izforge.izpack.panels.UserInputPanel>
@@ -65,6 +65,7 @@
     </com.izforge.izpack.panels.UserInputPanel>
     <com.izforge.izpack.panels.UserInputPanel id="cluster">
         <userInput>
+            <entry key="dbSettings.dbms.fileDataStorePath" value="${DS_PATH}"/>
             <entry key="cluster.processingServer" value="true"/>
             <entry key="cluster.node.ipAddress" value="&lt;auto&gt;"/>
             <entry key="cluster.node.port" value="7870"/>

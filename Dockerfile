@@ -15,6 +15,8 @@ ARG MAVEN_BASE_URL="https://mirrors.ircam.fr/pub/apache/maven/maven-3"
 ARG MODULES_BASE_URL="https://store.jahia.com/cms/mavenproxy/private-app-store/org/jahia/modules"
 
 # Jahia's properties
+ARG DS_IN_DB="true"
+ARG DS_PATH="/datastore/jahia"
 ARG JMANAGER_PASS="fakepassword"
 ARG JMANAGER_USER="jahia"
 ARG MAX_UPLOAD="268435456"
@@ -41,6 +43,7 @@ ENV CATALINA_BASE="/usr/local/tomcat" CATALINA_HOME="/usr/local/tomcat" CATALINA
 
 ENV DBMS_TYPE="$DBMS_TYPE" DB_HOST="$DB_HOST" DB_NAME="$DB_NAME" DB_USER="$DB_USER" DB_PASS="$DB_PASS"
 ENV JMANAGER_USER="$JMANAGER_USER" JMANAGER_PASS="$JMANAGER_PASS" SUPER_USER_PASSWORD="$SUPER_USER_PASSWORD"
+ENV DS_IN_DB="$DS_IN_DB" DS_PATH="$DS_PATH"
 
 
 ADD config_mariadb.xml /tmp
@@ -66,6 +69,7 @@ RUN apt update \
     && apt-get install -y --no-install-recommends \
         $packages \
     && rm -rf /var/lib/apt/lists/*
+
 
 RUN printf 'Start Jahia\s installation...\n' \
     && wget --progress=dot:giga -O installer.jar $BASE_URL \

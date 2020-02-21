@@ -10,12 +10,21 @@ sed -e 's,${FACTORY_DATA},'$FACTORY_DATA',' \
     -e "s,^#\s\?\s*\(svnPath\s*=\).*,\1 /usr/bin/svn," \
     -e "s,^#\s\?\s*\(mvnPath\s*=\).*,\1 $(find /opt -type f -executable -name mvn)," \
     -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
+if $DS_IN_DB; then
+    echo " -- Datastore have to be store in DB"
+    sed -e "s,^#\?\s*\(jahia.jackrabbit.datastore.path\s*=\).*,#\1 $DS_PATH," \
+        -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
+else
+    echo " -- Datastore have to be store in $DS_PATH"
+    sed -e "s,^#\?\s*\(jahia.jackrabbit.datastore.path\s*=\).*,\1 $DS_PATH," \
+        -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
+fi
 if (which ffmpeg > /dev/null); then
     echo " -- ffmpeg is present"
     sed -e "s/^#\?\s*\(jahia.dm.thumbnails.video.enabled\s*=\).*/\1 true/" \
         -e "s,^#\?\s*\(jahia.dm.thumbnails.video.ffmpeg\s*=\).*,\1 /usr/bin/ffmpeg," \
         -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
-    else
+else
     echo " -- ffmpeg is not present"
     sed -e "s/^#\?\s*\(jahia.dm.thumbnails.video.enabled\s*=\).*/\1 false/" \
         -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
@@ -25,7 +34,7 @@ if (which soffice > /dev/null); then
     sed -e "s/^#\?\s*\(documentConverter.enabled\s*=\).*/\1 true/" \
         -e "s,^#\?\s*\(documentConverter.officeHome\s*=\).*,\1 /usr/lib/libreoffice," \
         -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
-    else
+else
     echo " -- libreoffice is not present"
     sed -e "s/^#\?\s*\(documentConverter.enabled\s*=\).*/\1 false/" \
         -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
