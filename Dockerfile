@@ -73,11 +73,9 @@ RUN apt update \
     && apt-get install -y --no-install-recommends \
         $packages \
     && rm -rf /var/lib/apt/lists/*
-ADD installer.jar /tmp
-ADD maven.zip /tmp
 RUN printf "Start Jahia's installation...\n" \
-    #&& wget --progress=dot:giga -O installer.jar $BASE_URL \
-    #&& wget --progress=dot:giga -O maven.zip $MAVEN_BASE_URL/$MAVEN_VER/binaries/apache-maven-$MAVEN_VER-bin.zip \
+    && wget --progress=dot:giga -O installer.jar $BASE_URL \
+    && wget --progress=dot:giga -O maven.zip $MAVEN_BASE_URL/$MAVEN_VER/binaries/apache-maven-$MAVEN_VER-bin.zip \
     && sed -e 's/${MAVEN_VER}/'$MAVEN_VER'/' \
         -e 's/${DS_IN_DB}/'$DS_IN_DB'/' \
         -i /tmp/config_$DBMS_TYPE.xml \
