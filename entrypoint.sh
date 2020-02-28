@@ -74,7 +74,7 @@ echo "$SUPER_USER_PASSWORD" > $FACTORY_DATA/root.pwd
 case "$DBMS_TYPE" in
     "mariadb") 
         DB_PORT="3306"
-        testdb_result="$(mysql -u $DB_USER -p$DB_PASS -h $DB_HOST -D jahia -e "select count(REVISION_ID) from JR_J_LOCAL_REVISIONS;" -s)"
+        testdb_result="$(mysql -u $DB_USER -p$DB_PASS -h $DB_HOST -D $DB_NAME -e "select count(REVISION_ID) from JR_J_LOCAL_REVISIONS;" -s)"
         ;;
     "postgresql")
         DB_PORT="5432"
