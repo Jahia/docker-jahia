@@ -37,7 +37,7 @@ You can find the create scripts in the image here: `/data/digital-factory-data/d
 
 ## Image build
 
-### Specifics for Jahia 8
+### Bypass the installer.jar download and provide your own
 In case a file installer.jar is present in the same folder as the dockerfile during the build, this installer is used instead of the one referenced in the Dockerfile
 
 ### Specifics for Jahia 8
