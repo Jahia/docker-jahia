@@ -6,6 +6,7 @@ MAINTAINER Jahia Devops team <paas@jahia.com>
 # Image components
 ARG BASE_URL="https://downloads.jahia.com/downloads/jahia/jahia7.3.4/Jahia-EnterpriseDistribution-7.3.4.1-r60321.4663.jar"
 ARG DBMS_TYPE="mariadb"
+ARG INSTALL_FILE_SUFFIX=""
 ARG DEBUG_TOOLS="false"
 ARG FFMPEG="false"
 ARG HEALTHCHECK_VER="1.0.10"
@@ -46,10 +47,12 @@ ENV JMANAGER_USER="$JMANAGER_USER" JMANAGER_PASS="$JMANAGER_PASS" SUPER_USER_PAS
 ENV DS_IN_DB="$DS_IN_DB" DS_PATH="$DS_PATH"
 
 
-ADD config_mariadb.xml /tmp
-ADD config_postgresql.xml /tmp
+ADD config_mariadb$INSTALL_FILE_SUFFIX.xml /tmp
+ADD config_postgresql$INSTALL_FILE_SUFFIX.xml /tmp
 ADD entrypoint.sh /
 WORKDIR /tmp
+# these two files need to be copied on the same line since we want to copy installer.jar IF it exists, and copy doesn't support conditional copy (only copy if file exists)
+COPY entrypoint.sh installer.jar* ./
 
 
 ADD reset-jahia-tools-manager-password.py /usr/local/bin
@@ -74,12 +77,15 @@ RUN apt update \
         $packages \
     && rm -rf /var/lib/apt/lists/*
 RUN printf "Start Jahia's installation...\n" \
-    && wget --progress=dot:giga -O installer.jar $BASE_URL \
+    && ls -l \
+    && if [ ! -f "installer.jar" ]; then \
+        wget --progress=dot:giga -O installer.jar $BASE_URL; \
+       fi \
     && wget --progress=dot:giga -O maven.zip $MAVEN_BASE_URL/$MAVEN_VER/binaries/apache-maven-$MAVEN_VER-bin.zip \
     && sed -e 's/${MAVEN_VER}/'$MAVEN_VER'/' \
         -e 's/${DS_IN_DB}/'$DS_IN_DB'/' \
-        -i /tmp/config_$DBMS_TYPE.xml \
-    && java -jar installer.jar config_$DBMS_TYPE.xml \
+        -i /tmp/config_$DBMS_TYPE$INSTALL_FILE_SUFFIX.xml \
+    && java -jar installer.jar config_$DBMS_TYPE$INSTALL_FILE_SUFFIX.xml \
     && unzip -q maven.zip -d /opt \
     && rm -f installer.jar config_*.xml maven.zip \
     && mv /data/jahia/tomcat/webapps/* /usr/local/tomcat/webapps \

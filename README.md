@@ -34,6 +34,15 @@ You can find the create scripts in the image here: `/data/digital-factory-data/d
 | `XMX`                   | `2048M`        |                                                                                           |
 | `RESTORE_MODULE_STATES` | `true`         | restore modules and their states from database (forced to `false` when database is empty) |
 
+
+## Image build
+
+### Bypass the installer.jar download and provide your own
+In case a file installer.jar is present in the same folder as the dockerfile during the build, this installer is used instead of the one referenced in the Dockerfile
+
+### Specifics for Jahia 8
+It is necessary to add the parameter `--build-arg INSTALL_FILE_SUFFIX="_v8"` to the build command
+
 In order to use your license file, use _volume_, eg:
 ```bash
 docker run [some docker options here] \
