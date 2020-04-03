@@ -98,6 +98,9 @@ RUN printf "Start Jahia's installation...\n" \
 ADD $MODULES_BASE_URL/healthcheck/$HEALTHCHECK_VER/healthcheck-$HEALTHCHECK_VER.jar \
         $FACTORY_DATA/modules/healthcheck-$HEALTHCHECK_VER.jar
 
+COPY optional_modules* /tmp
+## allows the Docker build to continue if no modules were provided
+RUN mv /tmp/*.jar /data/digital-factory-data/modules || true
 
 EXPOSE 8080
 EXPOSE 7860
