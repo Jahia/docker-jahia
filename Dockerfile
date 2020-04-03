@@ -101,7 +101,6 @@ ADD $MODULES_BASE_URL/healthcheck/$HEALTHCHECK_VER/healthcheck-$HEALTHCHECK_VER.
 COPY optional_modules* /tmp
 ## allows the Docker build to continue if no modules were provided
 RUN mv /tmp/*.jar /data/digital-factory-data/modules || true
-RUN ls /data/digital-factory-data/modules
 
 EXPOSE 8080
 EXPOSE 7860
