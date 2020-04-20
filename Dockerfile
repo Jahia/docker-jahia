@@ -102,6 +102,12 @@ COPY optional_modules* /tmp
 ## allows the Docker build to continue if no modules were provided
 RUN mv /tmp/*.jar /data/digital-factory-data/modules || true
 
+# Add CORS filter for GraphQL queries
+ADD filter_graphql_update.xml /tmp
+RUN line=$(awk '/<listener>/ {print NR-1; exit}' /usr/local/tomcat/webapps/ROOT/WEB-INF/web.xml) \
+    && sed "$line r /tmp/filter_graphql_update.xml" -i /usr/local/tomcat/webapps/ROOT/WEB-INF/web.xml \
+    && rm /tmp/filter_graphql_update.xml
+
 EXPOSE 8080
 EXPOSE 7860
 EXPOSE 7870
