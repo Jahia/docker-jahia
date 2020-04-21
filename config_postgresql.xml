@@ -97,7 +97,7 @@
     </com.izforge.izpack.panels.UserInputPanel>
     <com.izforge.izpack.panels.UserInputPanel id="externalToolSettings">
         <userInput>
-            <entry key="dmConfig.imagemagickPath" value="/usr/bin"/>
+            <entry key="dmConfig.imagemagickPath" value="/opt/magick/bin"/>
             <entry key="dmConfig.officePath" value="/usr/lib/libreoffice"/>
             <entry key="dmConfig.validate" value="true"/>
             <entry key="dmConfig.ffmpegPath" value="/usr/bin/ffmpeg"/>
