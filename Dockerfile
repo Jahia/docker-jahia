@@ -14,6 +14,7 @@ ARG LIBREOFFICE="false"
 ARG MAVEN_VER="3.6.3"
 ARG MAVEN_BASE_URL="https://mirrors.ircam.fr/pub/apache/maven/maven-3"
 ARG MODULES_BASE_URL="https://store.jahia.com/cms/mavenproxy/private-app-store/org/jahia/modules"
+ARG IMAGEMAGICK_BINARIES_DOWNLOAD_URL="https://imagemagick.org/download/binaries/magick"
 
 # Jahia's properties
 ARG DS_IN_DB="true"
@@ -59,7 +60,7 @@ ADD reset-jahia-tools-manager-password.py /usr/local/bin
 
 
 RUN apt update \
-    && packages="imagemagick python3 jq ncat" \
+    && packages="python3 jq ncat libx11-6 libharfbuzz0b libfribidi0" \
     && case "$DBMS_TYPE" in \
         "mariadb") packages="$packages mariadb-client";; \
         "postgresql") packages="$packages postgresql-client";; \
@@ -107,6 +108,15 @@ ADD filter_graphql_update.xml /tmp
 RUN line=$(awk '/<listener>/ {print NR-1; exit}' /usr/local/tomcat/webapps/ROOT/WEB-INF/web.xml) \
     && sed "$line r /tmp/filter_graphql_update.xml" -i /usr/local/tomcat/webapps/ROOT/WEB-INF/web.xml \
     && rm /tmp/filter_graphql_update.xml
+
+# Retrieve latest ImageMagick binaries
+RUN echo "Retrieve latest ImageMagick binaries..." \
+    && wget --progress=dot:mega -O magick $IMAGEMAGICK_BINARIES_DOWNLOAD_URL \
+    && chmod +x magick \
+    && ./magick --appimage-extract \
+    && mkdir /opt/magick \
+    && mv squashfs-root/usr/* /opt/magick \
+    && rm -rf /opt/magick/share/ squashfs-root/ ./magick
 
 EXPOSE 8080
 EXPOSE 7860
