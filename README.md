@@ -31,7 +31,8 @@ You can find the create scripts in the image here: `/data/digital-factory-data/d
 | `MAX_UPLOAD`            | `268435456`    | max file size upload to Jahia                                                             |
 | `OPERATING_MODE`        | `development`  | can be `development` or `production`                                                      |
 | `PROCESSING_SERVER`     | `false`        | `false` for _browsing_ container, `true` for _processing_ one                             |
-| `XMX`                   | `2048M`        |                                                                                           |
+| `MAVEN_XMX`                   | `256m`        | set a maximum heap for maven                                                                                          |
+| `MAX_RAM_PERCENTAGE`                   | `25`        | percentage of the container limit to use forjahia memory heap (be aware that Jahia need at least 2GB)|
 | `RESTORE_MODULE_STATES` | `true`         | restore modules and their states from database (forced to `false` when database is empty) |
 
 
@@ -40,9 +41,11 @@ You can find the create scripts in the image here: `/data/digital-factory-data/d
 ### Bypass the installer.jar download and provide your own
 In case a file installer.jar is present in the same folder as the dockerfile during the build, this installer is used instead of the one referenced in the Dockerfile
 
-### Specifics for Jahia 8
-It is necessary to add the parameter `--build-arg INSTALL_FILE_SUFFIX="_v8"` to the build command
+### Specifics for Jahia <8
+It is necessary to add the parameter `--build-arg INSTALL_FILE_SUFFIX=""` to the build command
 
+## Instanciate
+### Using license file
 In order to use your license file, use _volume_, eg:
 ```bash
 docker run [some docker options here] \
@@ -52,3 +55,6 @@ docker run [some docker options here] \
     jahia/docker-enterprise:7.3.4.1
 
 ```
+### Be aware of MAX_RAM_PERCENTAGE
+OpenJDK 11 default in a container context is tu use 25% of the container's memory limit.
+Please set this variable to always have at least 2GB for Jahia's heap.
