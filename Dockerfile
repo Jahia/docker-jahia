@@ -4,12 +4,12 @@ MAINTAINER Jahia Devops team <paas@jahia.com>
 
 
 # Image components
-ARG BASE_URL="https://downloads.jahia.com/downloads/jahia/jahia7.3.4/Jahia-EnterpriseDistribution-7.3.4.1-r60321.4663.jar"
+ARG BASE_URL="https://downloads.jahia.com/downloads/jahia/jahia8.0.0/Jahia-EnterpriseDistribution-8.0.0.0-r60557.4681.jar"
 ARG DBMS_TYPE="mariadb"
-ARG INSTALL_FILE_SUFFIX=""
+ARG INSTALL_FILE_SUFFIX="_v8"
 ARG DEBUG_TOOLS="false"
 ARG FFMPEG="false"
-ARG HEALTHCHECK_VER="1.0.10"
+ARG HEALTHCHECK_VER="2.0.0"
 ARG LIBREOFFICE="false"
 ARG MAVEN_VER="3.6.3"
 ARG MAVEN_BASE_URL="https://mirrors.ircam.fr/pub/apache/maven/maven-3"
@@ -25,7 +25,8 @@ ARG MAX_UPLOAD="268435456"
 ARG OPERATING_MODE="development"
 ARG PROCESSING_SERVER="false"
 ARG SUPER_USER_PASSWORD="fakepassword"
-ARG XMX="2048M"
+ARG MAX_RAM_PERCENTAGE=25
+ARG MAVEN_XMX="256m"
 
 # Database's properties
 ARG DB_HOST="mariadb"
@@ -39,7 +40,9 @@ ENV FACTORY_DATA="/data/digital-factory-data"
 ENV FACTORY_CONFIG="/usr/local/tomcat/conf/digital-factory-config"
 ENV PROCESSING_SERVER="$PROCESSING_SERVER"
 ENV OPERATING_MODE="$OPERATING_MODE"
-ENV XMX="$XMX" MAX_UPLOAD="$MAX_UPLOAD"
+ENV MAX_UPLOAD="$MAX_UPLOAD"
+ENV MAX_RAM_PERCENTAGE="$MAX_RAM_PERCENTAGE"
+ENV MAVEN_OPTS="-Xmx$MAVEN_XMX"
 
 ENV CATALINA_BASE="/usr/local/tomcat" CATALINA_HOME="/usr/local/tomcat" CATALINA_TMPDIR="/usr/local/tomcat/temp"
 
