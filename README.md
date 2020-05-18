@@ -20,7 +20,6 @@ You can find the create scripts in the image here: `/data/digital-factory-data/d
 ### Instanciate
 | env var                 | default        | comment                                                                                               |
 |-------------------------|----------------|-------------------------------------------------------------------------------------------------------|
-| `DBMS_TYPE`             | `mariadb`      | can be `mariadb` or `postgresql`                                                                      |
 | `DB_HOST`               | `mariadb`      |                                                                                                       |
 | `DB_NAME`               | `jahia`        |                                                                                                       |
 | `DB_USER`               | `jahia`        |                                                                                                       |
