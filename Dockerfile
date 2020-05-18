@@ -4,9 +4,9 @@ MAINTAINER Jahia Devops team <paas@jahia.com>
 
 
 # Image components
-ARG BASE_URL="https://downloads.jahia.com/downloads/jahia/jahia7.3.4/Jahia-EnterpriseDistribution-7.3.4.1-r60321.4663.jar"
+ARG BASE_URL="https://downloads.jahia.com/downloads/jahia/jahia8.0.0/Jahia-EnterpriseDistribution-8.0.0.0-r60557.4681.jar"
 ARG DBMS_TYPE="mariadb"
-ARG INSTALL_FILE_SUFFIX=""
+ARG INSTALL_FILE_SUFFIX="_v8"
 ARG DEBUG_TOOLS="false"
 ARG FFMPEG="false"
 ARG HEALTHCHECK_VER="1.0.10"
