@@ -1,0 +1,119 @@
+---
+version: 2.1
+
+orbs:
+  docker: circleci/docker@1.0.1
+
+commands:
+  build_jahia:
+    description: "Build Jahia's images for jahiastic-jahia"
+    parameters:
+      jver:
+        type: string
+      base_url:
+        type: string
+      xml_suffix:
+        type: string
+      tag_suffix:
+        type: string
+        default: "<< pipeline.git_branch >>"
+      dbms_type:
+        type: string
+      debug_tools:
+        type: string
+      ffmpeg:
+        type: string
+      libreoffice:
+        type: string
+      ds_in_db:
+        type: string
+      latest:
+        type: boolean
+        default: False
+    steps:
+      - setup_remote_docker
+      - checkout
+      - docker/check
+      - docker/build:
+          step-name: "Build jahia/jahia:<< parameters.jver >><< parameters.tag_suffix >>"
+          tag: "<< parameters.jver >><< parameters.tag_suffix >>"
+          image: "jahia/jahia"
+          dockerfile: Dockerfile
+          extra_build_args:
+            '
+            --build-arg BASE_URL="<< parameters.base_url >>"
+            --build-arg DBMS_TYPE="<< parameters.dbms_type >>"
+            --build-arg INSTALL_FILE_SUFFIX="<< parameters.xml_suffix >>"
+            --build-arg DEBUG_TOOLS="<< parameters.debug_tools >>"
+            --build-arg FFMPEG="<< parameters.ffmpeg >>"
+            --build-arg LIBREOFFICE="<< parameters.libreoffice >>"
+            --build-arg DS_IN_DB="<< parameters.ds_in_db >>"
+            --no-cache
+            '
+      - docker/push:
+          step-name: "Push jahia/jahia:<< parameters.jver >><< parameters.tag_suffix >>"
+          image: "jahia/jahia"
+          tag: "<< parameters.jver >><< parameters.tag_suffix >>"
+
+jobs:
+  b8000_default:
+    executor: docker/docker
+    steps:
+      - build_jahia:
+          jver: "8.0.0.0"
+          tag_suffix: ""
+          latest: True
+          xml_suffix: "_v8"
+          base_url: "https://downloads.jahia.com/downloads/jahia/jahia8.0.0/Jahia-EnterpriseDistribution-8.0.0.0-r60557.4681.jar"
+          dbms_type: "mariadb"
+          ds_in_db: "true"
+          debug_tools: "false"
+          ffmpeg: "false"
+          libreoffice: "false"
+  b8000_fs:
+    executor: docker/docker
+    steps:
+      - build_jahia:
+          jver: "8.0.0.0"
+          tag_suffix: "_fs"
+          latest: False
+          xml_suffix: "_v8"
+          base_url: "https://downloads.jahia.com/downloads/jahia/jahia8.0.0/Jahia-EnterpriseDistribution-8.0.0.0-r60557.4681.jar"
+          dbms_type: "mariadb"
+          ds_in_db: "false"
+          debug_tools: "false"
+          ffmpeg: "false"
+          libreoffice: "false"
+  b7341_default:
+    executor: docker/docker
+    steps:
+      - build_jahia:
+          jver: "7.3.4.1"
+          tag_suffix: ""
+          xml_suffix: ""
+          base_url: "http://downloads.jahia.com/downloads/jahia/jahia7.3.4/Jahia-EnterpriseDistribution-7.3.4.1-r60321.4663.jar"
+          dbms_type: "mariadb"
+          ds_in_db: "true"
+          debug_tools: "false"
+          ffmpeg: "false"
+          libreoffice: "false"
+
+workflows:
+  version: 2
+  build_all_jahia:
+    jobs:
+      - b8000_default:
+          context: cloud-qa
+          filters:
+            branches:
+              only: master
+      - b8000_fs:
+          context: cloud-qa
+          filters:
+            branches:
+              only: master
+      - b7341_default:
+          context: cloud-qa
+          filters:
+            branches:
+              only: master
