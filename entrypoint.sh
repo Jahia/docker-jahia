@@ -110,5 +110,5 @@ fi
 
 
 echo "Start catalina..."
-exec /usr/local/tomcat/bin/catalina.sh run
+exec /usr/local/tomcat/bin/catalina.sh jpda run
 
