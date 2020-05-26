@@ -121,6 +121,7 @@ RUN echo "Retrieve latest ImageMagick binaries..." \
     && mv squashfs-root/usr/* /opt/magick \
     && rm -rf /opt/magick/share/ squashfs-root/ ./magick
 
+EXPOSE 8000
 EXPOSE 8080
 EXPOSE 7860
 EXPOSE 7870
