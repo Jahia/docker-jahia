@@ -57,3 +57,4 @@ docker run [some docker options here] \
 ### Be aware of MAX_RAM_PERCENTAGE
 OpenJDK 11 default in a container context is tu use 25% of the container's memory limit.
 Please set this variable to always have at least 2GB for Jahia's heap.
+
