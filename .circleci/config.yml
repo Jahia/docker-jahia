@@ -3,11 +3,15 @@ version: 2.1
 
 orbs:
   docker: circleci/docker@1.0.1
+  slack: circleci/slack@3.4.2
 
 commands:
   build_jahia:
-    description: "Build Jahia's images for jahiastic-jahia"
+    description: "Build Jahia's images"
     parameters:
+      repo:
+        type: string
+        default: build2test
       jver:
         type: string
       base_url:
@@ -19,28 +23,33 @@ commands:
         default: "<< pipeline.git_branch >>"
       dbms_type:
         type: string
+        default: "mariadb"
       debug_tools:
         type: string
+        default: "false"
       ffmpeg:
         type: string
+        default: "false"
       libreoffice:
         type: string
+        default: "false"
       ds_in_db:
         type: string
+        default: "true"
       healthcheck_ver:
         type: string
         default: "2.0.2"
       latest:
         type: boolean
-        default: False
+        default: false
     steps:
       - setup_remote_docker
       - checkout
       - docker/check
       - docker/build:
-          step-name: "Build jahia/jahia:<< parameters.jver >><< parameters.tag_suffix >>"
+          step-name: "Build jahia/<< parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >>"
           tag: "<< parameters.jver >><< parameters.tag_suffix >>"
-          image: "jahia/jahia"
+          image: "jahia/<< parameters.repo >>"
           dockerfile: Dockerfile
           extra_build_args:
             '
@@ -55,70 +64,276 @@ commands:
             --no-cache
             '
       - docker/push:
-          step-name: "Push jahia/jahia:<< parameters.jver >><< parameters.tag_suffix >>"
-          image: "jahia/jahia"
+          step-name: "Push to test repo jahia/<< parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >>"
+          image: "jahia/<< parameters.repo >>"
           tag: "<< parameters.jver >><< parameters.tag_suffix >>"
+      - slack/status:
+          failure_message: |
+            ':alert: Building jahia:<< parameters.jver >><< parameters.tag_suffix >> has failed !'
+          success_message: |
+            ':building_construction: Building jahia:<< parameters.jver >><< parameters.tag_suffix >> successfully.'
+
+  test_jahia:
+    description: "Testing Jahia's images"
+    parameters:
+      jver:
+        type: string
+      tag_suffix:
+        type: string
+        default: "<< pipeline.git_branch >>"
+    steps:
+      - run:
+          name: import db schema
+          command: |
+            set +o pipefail
+            echo "simply wait 15s for mysql before import schema..."
+            sleep 15
+            echo "setting max_allowed_packet..."
+              mysql -u root -p$MYSQL_ROOT_PASSWORD -h $DB_HOST --protocol=tcp -e "set global max_allowed_packet=134217728;" 
+            echo "now importing schema..."
+            echo  mysql -u $DB_USER -p$DB_PASS -h $DB_HOST --protocol=tcp -D $DB_NAME
+            cat /data/digital-factory-data/db/sql/schema/mysql/01-* | \
+              mysql -u $DB_USER -p$DB_PASS -h $DB_HOST --protocol=tcp -D $DB_NAME
+      - run:
+          name: start jahia entrypoint
+          background: true
+          command: |
+            set +o pipefail
+            env
+            free -m
+            /entrypoint.sh
+      - run:
+          name: healtcheck test and push
+          command: |
+            set +o pipefail
+            for i in {1..666}; do
+              echo "iteration $i/666..."
+              jsonhealth=$(curl -m 1 http://localhost:8080/healthcheck -s -u root:$SUPER_USER_PASSWORD||exit 0)
+              echo $jsonhealth
+              if (test "$(echo $jsonhealth | jq -r '.status')" = "GREEN"); then
+                exit 0
+              fi
+              echo "Not ready yet"
+              echo
+              sleep 1
+            done
+            echo "you are a failure"
+            exit 1
+      - slack/status:
+          failure_message: |
+            ':alert: Testing jahia:<< parameters.jver >><< parameters.tag_suffix >> has failed !'
+          success_message: |
+            ':heartpulse: Testing jahia:<< parameters.jver >><< parameters.tag_suffix >> successfully.'
+
+  publish_image:
+    description: "Push tested image to public repo"
+    parameters:
+      repo:
+        type: string
+        default: jahia
+      repo_source:
+        type: string
+        default: build2test
+      jver:
+        type: string
+      tag_suffix:
+        type: string
+        default: "<< pipeline.git_branch >>"
+      latest:
+        type: boolean
+        default: false
+    steps:
+      - setup_remote_docker
+      - checkout
+      - docker/check
+      - docker/pull:
+          images: "jahia/<< parameters.repo_source >>:<< parameters.jver >><< parameters.tag_suffix >>"
+      - run:
+          name: "set final name to image"
+          command: |
+            docker tag \
+              jahia/<< parameters.repo_source >>:<< parameters.jver >><< parameters.tag_suffix >> \
+              jahia/<< parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >>
+      - docker/push:
+          step-name: "Push to final repo jahia/<< parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >>"
+          image: "jahia/<< parameters.repo >>"
+          tag: "<< parameters.jver >><< parameters.tag_suffix >>"
+      - when:
+          condition: << parameters.latest >>
+          steps:
+            - run:
+                name: "set latest tag to image"
+                command: |
+                  docker tag \
+                    jahia/<< parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >> \
+                    jahia/<< parameters.repo >>:latest
+            - docker/push:
+                step-name: "Pushing jahia/<< parameters.repo >>:latest"
+                image: "jahia/<< parameters.repo >>"
+                tag: "latest"
+      - slack/status:
+          failure_message: |
+            ':alert: Publishing jahia:<< parameters.jver >><< parameters.tag_suffix >> has failed !'
+          success_message: |
+            ':whale2: Publishing jahia:<< parameters.jver >><< parameters.tag_suffix >> successfully.'
+
+######################## common stuff
+filters: &filters
+  branches:
+    only: master
+environment_jahia: &environment_jahia
+  environment:
+    SUPER_USER_PASSWORD: jahia
+    MYSQL_ROOT_PASSWORD: jahia
+    DB_HOST: localhost
+    DB_PASS: jahia
+    PROCESSING_SERVER: "true"
+    MAX_RAM_PERCENTAGE: "70"
+    RESTORE_MODULE_STATES: "false"
+environment_db: &environment_db 
+  environment:
+    MYSQL_ROOT_PASSWORD: jahia
+    MYSQL_DATABASE: jahia
+    MYSQL_USER: jahia
+    MYSQL_PASSWORD: jahia
+db_container: &db_container
+  - image: circleci/mysql:5.7
+    <<: *environment_db
+####################################
 
 jobs:
-  b8000_default:
+  ################################## 8.0.0.0
+  b8000:
     executor: docker/docker
     steps:
       - build_jahia:
           jver: "8.0.0.0"
-          tag_suffix: ""
-          latest: True
+          latest: true
           xml_suffix: "_v8"
           base_url: "https://downloads.jahia.com/downloads/jahia/jahia8.0.0/Jahia-EnterpriseDistribution-8.0.0.0-r60557.4681.jar"
-          dbms_type: "mariadb"
-          ds_in_db: "true"
-          debug_tools: "false"
-          ffmpeg: "false"
-          libreoffice: "false"
+  t8000:
+    docker:
+      - image: jahia/build2test:8.0.0.0
+        <<: *environment_jahia
+      - <<: *db_container
+    steps:
+      - test_jahia:
+          jver: "8.0.0.0"
+  p8000:
+    executor: docker/docker
+    steps:
+      - publish_image:
+          jver: "8.0.0.0"
+          latest: true
+  ##########################################
+  ############################### 8.0.0.0_fs
   b8000_fs:
     executor: docker/docker
     steps:
       - build_jahia:
           jver: "8.0.0.0"
           tag_suffix: "_fs"
-          latest: False
+          ds_in_db: "false"
           xml_suffix: "_v8"
           base_url: "https://downloads.jahia.com/downloads/jahia/jahia8.0.0/Jahia-EnterpriseDistribution-8.0.0.0-r60557.4681.jar"
-          dbms_type: "mariadb"
-          ds_in_db: "false"
-          debug_tools: "false"
-          ffmpeg: "false"
-          libreoffice: "false"
-  b7341_default:
+  t8000_fs:
+    docker:
+      - image: jahia/build2test:8.0.0.0_fs
+        <<: *environment_jahia
+      - <<: *db_container
+    steps:
+      - test_jahia:
+          jver: "8.0.0.0"
+          tag_suffix: "_fs"
+  p8000_fs:
+    executor: docker/docker
+    steps:
+      - publish_image:
+          jver: "8.0.0.0"
+          tag_suffix: "_fs"
+  ##########################################
+  ################################## 7.3.4.1
+  b7341:
     executor: docker/docker
     steps:
       - build_jahia:
           jver: "7.3.4.1"
-          tag_suffix: ""
           xml_suffix: ""
           base_url: "http://downloads.jahia.com/downloads/jahia/jahia7.3.4/Jahia-EnterpriseDistribution-7.3.4.1-r60321.4663.jar"
-          dbms_type: "mariadb"
-          ds_in_db: "true"
-          debug_tools: "false"
-          ffmpeg: "false"
-          libreoffice: "false"
           healthcheck_ver: "1.0.11"
+  t7341:
+    docker:
+      - image: jahia/build2test:7.3.4.1
+        <<: *environment_jahia
+      - <<: *db_container
+    steps:
+      - test_jahia:
+          jver: "7.3.4.1"
+  p7341:
+    executor: docker/docker
+    steps:
+      - publish_image:
+          jver: "7.3.4.1"
+  ##########################################
 
 workflows:
   version: 2
   build_all_jahia:
     jobs:
-      - b8000_default:
-          context: cloud-qa
+      ############# 8.0.0.0
+      - b8000:
           filters:
-            branches:
-              only: master
+            <<: *filters
+          context: cloud-qa
+      - t8000:
+          requires:
+            - b8000
+          filters:
+            <<: *filters
+          context: cloud-qa
+      - p8000:
+          requires:
+            - t8000
+          filters:
+            <<: *filters
+          context: cloud-qa
+      #####################
+      ########## 8.0.0.0_fs
+      ## build for k8s demo
       - b8000_fs:
           context: cloud-qa
           filters:
             branches:
               only: master
-      - b7341_default:
+      - t8000_fs:
+          requires:
+            - b8000_fs
+          filters:
+            <<: *filters
+          context: cloud-qa
+      - p8000_fs:
+          requires:
+            - t8000_fs
+          filters:
+            <<: *filters
+          context: cloud-qa
+      #####################
+      ############# 7.3.4.1
+      - b7341:
           context: cloud-qa
           filters:
             branches:
               only: master
+      - t7341:
+          requires:
+            - b7341
+          filters:
+            <<: *filters
+          context: cloud-qa
+      - p7341:
+          requires:
+            - t7341
+          filters:
+            <<: *filters
+          context: cloud-qa
+      #####################
