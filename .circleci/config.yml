@@ -18,6 +18,7 @@ commands:
         type: string
       xml_suffix:
         type: string
+        default: "_v8"
       tag_suffix:
         type: string
         default: "<< pipeline.git_branch >>"
@@ -39,9 +40,6 @@ commands:
       healthcheck_ver:
         type: string
         default: "2.0.2"
-      latest:
-        type: boolean
-        default: false
     steps:
       - setup_remote_docker
       - checkout
@@ -179,8 +177,12 @@ commands:
 
 ######################## common stuff
 filters: &filters
-  branches:
-    only: master
+  filters:
+    branches:
+      only: master
+job_options: &job_options
+  context: cloud-qa
+  <<: *filters
 environment_jahia: &environment_jahia
   environment:
     SUPER_USER_PASSWORD: jahia
@@ -208,8 +210,6 @@ jobs:
     steps:
       - build_jahia:
           jver: "8.0.0.0"
-          latest: true
-          xml_suffix: "_v8"
           base_url: "https://downloads.jahia.com/downloads/jahia/jahia8.0.0/Jahia-EnterpriseDistribution-8.0.0.0-r60557.4681.jar"
   t8000:
     docker:
@@ -234,7 +234,6 @@ jobs:
           jver: "8.0.0.0"
           tag_suffix: "_fs"
           ds_in_db: "false"
-          xml_suffix: "_v8"
           base_url: "https://downloads.jahia.com/downloads/jahia/jahia8.0.0/Jahia-EnterpriseDistribution-8.0.0.0-r60557.4681.jar"
   t8000_fs:
     docker:
@@ -282,58 +281,38 @@ workflows:
     jobs:
       ############# 8.0.0.0
       - b8000:
-          filters:
-            <<: *filters
-          context: cloud-qa
+          <<: *job_options
       - t8000:
           requires:
             - b8000
-          filters:
-            <<: *filters
-          context: cloud-qa
+          <<: *job_options
       - p8000:
           requires:
             - t8000
-          filters:
-            <<: *filters
-          context: cloud-qa
+          <<: *job_options
       #####################
       ########## 8.0.0.0_fs
       ## build for k8s demo
       - b8000_fs:
-          context: cloud-qa
-          filters:
-            branches:
-              only: master
+          <<: *job_options
       - t8000_fs:
           requires:
             - b8000_fs
-          filters:
-            <<: *filters
-          context: cloud-qa
+          <<: *job_options
       - p8000_fs:
           requires:
             - t8000_fs
-          filters:
-            <<: *filters
-          context: cloud-qa
+          <<: *job_options
       #####################
       ############# 7.3.4.1
       - b7341:
-          context: cloud-qa
-          filters:
-            branches:
-              only: master
+          <<: *job_options
       - t7341:
           requires:
             - b7341
-          filters:
-            <<: *filters
-          context: cloud-qa
+          <<: *job_options
       - p7341:
           requires:
             - t7341
-          filters:
-            <<: *filters
-          context: cloud-qa
+          <<: *job_options
       #####################
