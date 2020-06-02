@@ -258,6 +258,29 @@ jobs:
           jver: "8.0.0.0"
           tag_suffix: "_fs"
   ##########################################
+  ################################## 7.3.5.0
+  b7350:
+    executor: docker/docker
+    steps:
+      - build_jahia:
+          jver: "7.3.5.0"
+          xml_suffix: ""
+          base_url: "https://downloads.jahia.com/downloads/jahia/jahia7.3.5/Jahia-EnterpriseDistribution-7.3.5.0-r60598.4688.jar"
+          healthcheck_ver: "1.0.11"
+  t7350:
+    docker:
+      - image: jahia/build2test:7.3.5.0
+        <<: *environment_jahia
+      - <<: *db_container
+    steps:
+      - test_jahia:
+          jver: "7.3.5.0"
+  p7350:
+    executor: docker/docker
+    steps:
+      - publish_image:
+          jver: "7.3.5.0"
+  ##########################################
   ################################## 7.3.4.1
   b7341:
     executor: docker/docker
@@ -309,6 +332,18 @@ workflows:
       - p8000_fs:
           requires:
             - t8000_fs
+          <<: *job_options
+      #####################
+      ############# 7.3.5.0
+      - b7350:
+          <<: *job_options
+      - t7350:
+          requires:
+            - b7350
+          <<: *job_options
+      - p7350:
+          requires:
+            - t7350
           <<: *job_options
       #####################
       ############# 7.3.4.1
