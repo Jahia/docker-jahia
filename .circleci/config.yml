@@ -11,7 +11,7 @@ commands:
     parameters:
       repo:
         type: string
-        default: build2test
+        default: jahia/build2test
       jver:
         type: string
       base_url:
@@ -45,9 +45,9 @@ commands:
       - checkout
       - docker/check
       - docker/build:
-          step-name: "Build jahia/<< parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >>"
+          step-name: "Build << parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >>"
           tag: "<< parameters.jver >><< parameters.tag_suffix >>"
-          image: "jahia/<< parameters.repo >>"
+          image: "<< parameters.repo >>"
           dockerfile: Dockerfile
           extra_build_args:
             '
@@ -62,8 +62,8 @@ commands:
             --no-cache
             '
       - docker/push:
-          step-name: "Push to test repo jahia/<< parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >>"
-          image: "jahia/<< parameters.repo >>"
+          step-name: "Push to test repo << parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >>"
+          image: "<< parameters.repo >>"
           tag: "<< parameters.jver >><< parameters.tag_suffix >>"
       - slack/status:
           failure_message: |
@@ -83,9 +83,16 @@ commands:
       - run:
           name: import db schema
           command: |
-            set +o pipefail
-            echo "simply wait 15s for mysql before import schema..."
-            sleep 15
+            set +eo pipefail
+            cli="mysql -u root -p$MYSQL_ROOT_PASSWORD -h $DB_HOST --protocol=tcp"
+            i=0
+            il=66
+            until ($cli -e "select 1"); do
+              ((i++))
+              [ $i -gt 66 ] && echo "Oh fuck off man!" && exit 1
+              echo "waiting for DB... (iteration $i/$il)"
+              sleep 1
+            done
             echo "setting max_allowed_packet..."
               mysql -u root -p$MYSQL_ROOT_PASSWORD -h $DB_HOST --protocol=tcp -e "set global max_allowed_packet=134217728;" 
             echo "now importing schema..."
@@ -128,10 +135,10 @@ commands:
     parameters:
       repo:
         type: string
-        default: jahia
+        default: jahia/jahia
       repo_source:
         type: string
-        default: build2test
+        default: jahia/build2test
       jver:
         type: string
       tag_suffix:
@@ -145,16 +152,16 @@ commands:
       - checkout
       - docker/check
       - docker/pull:
-          images: "jahia/<< parameters.repo_source >>:<< parameters.jver >><< parameters.tag_suffix >>"
+          images: "<< parameters.repo_source >>:<< parameters.jver >><< parameters.tag_suffix >>"
       - run:
           name: "set final name to image"
           command: |
             docker tag \
-              jahia/<< parameters.repo_source >>:<< parameters.jver >><< parameters.tag_suffix >> \
-              jahia/<< parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >>
+              << parameters.repo_source >>:<< parameters.jver >><< parameters.tag_suffix >> \
+              << parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >>
       - docker/push:
-          step-name: "Push to final repo jahia/<< parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >>"
-          image: "jahia/<< parameters.repo >>"
+          step-name: "Push to final repo << parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >>"
+          image: "<< parameters.repo >>"
           tag: "<< parameters.jver >><< parameters.tag_suffix >>"
       - when:
           condition: << parameters.latest >>
@@ -163,11 +170,11 @@ commands:
                 name: "set latest tag to image"
                 command: |
                   docker tag \
-                    jahia/<< parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >> \
-                    jahia/<< parameters.repo >>:latest
+                    << parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >> \
+                    << parameters.repo >>:latest
             - docker/push:
-                step-name: "Pushing jahia/<< parameters.repo >>:latest"
-                image: "jahia/<< parameters.repo >>"
+                step-name: "Pushing << parameters.repo >>:latest"
+                image: "<< parameters.repo >>"
                 tag: "latest"
       - slack/status:
           failure_message: |
