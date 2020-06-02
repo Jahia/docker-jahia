@@ -212,13 +212,13 @@ db_container: &db_container
 
 jobs:
   ################################## 8.0.0.0
-  b8000:
+  build_8000:
     executor: docker/docker
     steps:
       - build_jahia:
           jver: "8.0.0.0"
           base_url: "https://downloads.jahia.com/downloads/jahia/jahia8.0.0/Jahia-EnterpriseDistribution-8.0.0.0-r60557.4681.jar"
-  t8000:
+  test_8000:
     docker:
       - image: jahia/build2test:8.0.0.0
         <<: *environment_jahia
@@ -226,7 +226,7 @@ jobs:
     steps:
       - test_jahia:
           jver: "8.0.0.0"
-  p8000:
+  publish_8000:
     executor: docker/docker
     steps:
       - publish_image:
@@ -234,7 +234,7 @@ jobs:
           latest: true
   ##########################################
   ############################### 8.0.0.0_fs
-  b8000_fs:
+  build_8000_fs:
     executor: docker/docker
     steps:
       - build_jahia:
@@ -242,7 +242,7 @@ jobs:
           tag_suffix: "_fs"
           ds_in_db: "false"
           base_url: "https://downloads.jahia.com/downloads/jahia/jahia8.0.0/Jahia-EnterpriseDistribution-8.0.0.0-r60557.4681.jar"
-  t8000_fs:
+  test_8000_fs:
     docker:
       - image: jahia/build2test:8.0.0.0_fs
         <<: *environment_jahia
@@ -251,7 +251,7 @@ jobs:
       - test_jahia:
           jver: "8.0.0.0"
           tag_suffix: "_fs"
-  p8000_fs:
+  publish_8000_fs:
     executor: docker/docker
     steps:
       - publish_image:
@@ -259,7 +259,7 @@ jobs:
           tag_suffix: "_fs"
   ##########################################
   ################################## 7.3.5.0
-  b7350:
+  build_7350:
     executor: docker/docker
     steps:
       - build_jahia:
@@ -267,7 +267,7 @@ jobs:
           xml_suffix: ""
           base_url: "https://downloads.jahia.com/downloads/jahia/jahia7.3.5/Jahia-EnterpriseDistribution-7.3.5.0-r60598.4688.jar"
           healthcheck_ver: "1.0.11"
-  t7350:
+  test_7350:
     docker:
       - image: jahia/build2test:7.3.5.0
         <<: *environment_jahia
@@ -275,14 +275,14 @@ jobs:
     steps:
       - test_jahia:
           jver: "7.3.5.0"
-  p7350:
+  publish_7350:
     executor: docker/docker
     steps:
       - publish_image:
           jver: "7.3.5.0"
   ##########################################
   ################################## 7.3.4.1
-  b7341:
+  build_7341:
     executor: docker/docker
     steps:
       - build_jahia:
@@ -290,7 +290,7 @@ jobs:
           xml_suffix: ""
           base_url: "http://downloads.jahia.com/downloads/jahia/jahia7.3.4/Jahia-EnterpriseDistribution-7.3.4.1-r60321.4663.jar"
           healthcheck_ver: "1.0.11"
-  t7341:
+  test_7341:
     docker:
       - image: jahia/build2test:7.3.4.1
         <<: *environment_jahia
@@ -298,7 +298,7 @@ jobs:
     steps:
       - test_jahia:
           jver: "7.3.4.1"
-  p7341:
+  publish_7341:
     executor: docker/docker
     steps:
       - publish_image:
@@ -310,51 +310,51 @@ workflows:
   build_all_jahia:
     jobs:
       ############# 8.0.0.0
-      - b8000:
+      - build_8000:
           <<: *job_options
-      - t8000:
+      - test_8000:
           requires:
-            - b8000
+            - build_8000
           <<: *job_options
-      - p8000:
+      - publish_8000:
           requires:
-            - t8000
+            - test_8000
           <<: *job_options
       #####################
       ########## 8.0.0.0_fs
       ## build for k8s demo
-      - b8000_fs:
+      - build_8000_fs:
           <<: *job_options
-      - t8000_fs:
+      - test_8000_fs:
           requires:
-            - b8000_fs
+            - build_8000_fs
           <<: *job_options
-      - p8000_fs:
+      - publish_8000_fs:
           requires:
-            - t8000_fs
+            - test_8000_fs
           <<: *job_options
       #####################
       ############# 7.3.5.0
-      - b7350:
+      - build_7350:
           <<: *job_options
-      - t7350:
+      - test_7350:
           requires:
-            - b7350
+            - build_7350
           <<: *job_options
-      - p7350:
+      - publish_7350:
           requires:
-            - t7350
+            - test_7350
           <<: *job_options
       #####################
       ############# 7.3.4.1
-      - b7341:
+      - build_7341:
           <<: *job_options
-      - t7341:
+      - test_7341:
           requires:
-            - b7341
+            - build_7341
           <<: *job_options
-      - p7341:
+      - publish_7341:
           requires:
-            - t7341
+            - test_7341
           <<: *job_options
       #####################
