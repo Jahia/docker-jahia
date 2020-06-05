@@ -186,7 +186,7 @@ commands:
 filters: &filters
   filters:
     branches:
-      only: master
+      only: SAAS-140-test
 job_options: &job_options
   context: cloud-qa
   <<: *filters

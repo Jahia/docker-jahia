@@ -35,17 +35,17 @@
     <com.izforge.izpack.panels.UserInputPanel id="dbSettings">
         <userInput>
             <entry key="dbSettings.connection.driver.mariadb" value="org.mariadb.jdbc.Driver"/>
-            <entry key="dbSettings.connection.url.mariadb" value="jdbc:mariadb://${DB_HOST}/${DB_NAME}?useUnicode=true&amp;characterEncoding=UTF-8&amp;useServerPrepStmts=false&amp;useSSL=false"/>
+            <entry key="dbSettings.connection.url.mariadb" value="jdbc:mariadb://${DB_CACA}/${DB_CACA}?useUnicode=true&amp;characterEncoding=UTF-8&amp;useServerPrepStmts=false&amp;useSSL=false"/>
             <entry key="dbSettings.dbms.createTables" value="false"/>
-            <entry key="dbSettings.connection.username" value="${DB_USER}"/>
+            <entry key="dbSettings.connection.username" value="${DB_CACA}"/>
             <entry key="dbSettings.dbms.storeFilesInDB" value="${DS_IN_DB}"/>
-            <entry key="dbSettings.connection.password" value="${DB_PASS}"/>
+            <entry key="dbSettings.connection.password" value="${DB_CACA}"/>
         </userInput>
     </com.izforge.izpack.panels.UserInputPanel>
     <com.izforge.izpack.panels.UserInputPanel id="webApp">
         <userInput>
-            <entry key="jahiaManager.username" value="${JMANAGER_USER}"/>
-            <entry key="jahiaManager.password" value="${JMANAGER_PASSWORD}"/>
+            <entry key="jahiaManager.username" value="${DU_CACA}"/>
+            <entry key="jahiaManager.password" value="${DU_CACA}"/>
             <entry key="karaf.remoteShell.port" value="8101"/>
             <entry key="jahia.war.contextName" value=""/>
         </userInput>
@@ -74,7 +74,7 @@
     </com.izforge.izpack.panels.UserInputPanel>
     <com.izforge.izpack.panels.UserInputPanel id="superUser">
         <userInput>
-            <entry key="superUser.password" value="${SUPER_USER_PASSWORD}"/>
+            <entry key="superUser.password" value="${DU_CACA}"/>
             <entry key="superUser.firstname" value=""/>
             <entry key="superUser.lastname" value=""/>
             <entry key="superUser.email" value=""/>
