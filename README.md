@@ -19,22 +19,22 @@ You must have a `mariadb` or `postgresql` DBMS with a Jahia's schema import in a
 You can find the create scripts in the image here: `/data/digital-factory-data/db/sql/schema/{mysql,postgresql}`
 
 ### Instanciate
-| env var                 | default                      | comment                                                                                               |
-|-------------------------|------------------------------|-------------------------------------------------------------------------------------------------------|
-| `DB_HOST`               | `mariadb`                    |                                                                                                       |
-| `DB_NAME`               | `jahia`                      |                                                                                                       |
-| `DB_USER`               | `jahia`                      |                                                                                                       |
-| `DB_PASS`               | `fakepassword`               |                                                                                                       |
-| `SUPER_USER_PASSWORD`   | `fakepassword`               | Jahia's _root_ password                                                                               |
-| `JMANAGER_USER`         | `jahia`                      | Jahia's _/tools_ user                                                                                 |
-| `JMANAGER_PASS`         | `fakepassword`               | Jahia's _/tools_ password                                                                             |
-| `MAX_UPLOAD`            | `268435456`                  | max file size upload to Jahia                                                                         |
-| `OPERATING_MODE`        | `development`                | can be `development` or `production`                                                                  |
-| `PROCESSING_SERVER`     | `false`                      | `false` for _browsing_ container, `true` for _processing_ one                                         |
-| `MAVEN_XMX`             | `256m`                       | set a maximum heap for maven                                                                          |
-| `MAX_RAM_PERCENTAGE`    | `25`                         | percentage of the container limit to use forjahia memory heap (be aware that Jahia need at least 2GB) |
-| `RESTORE_MODULE_STATES` | `true`                       | restore modules and their states from database (forced to `false` when database is empty)             |
-| `LOG_MAX_DAYS`          | `5` (can be change at build) | Set container's logs retention rule                                                                   |
+| env var                 | default                    | comment                                                                                               |
+|-------------------------|----------------------------|-------------------------------------------------------------------------------------------------------|
+| `DB_HOST`               | `mariadb`                  |                                                                                                       |
+| `DB_NAME`               | `jahia`                    |                                                                                                       |
+| `DB_USER`               | `jahia`                    |                                                                                                       |
+| `DB_PASS`               | `fakepassword`             |                                                                                                       |
+| `SUPER_USER_PASSWORD`   | `fakepassword`             | Jahia's _root_ password                                                                               |
+| `JMANAGER_USER`         | `jahia`                    | Jahia's _/tools_ user                                                                                 |
+| `JMANAGER_PASS`         | `fakepassword`             | Jahia's _/tools_ password                                                                             |
+| `MAX_UPLOAD`            | `268435456`                | max file size upload to Jahia                                                                         |
+| `OPERATING_MODE`        | `development`              | can be `development` or `production`                                                                  |
+| `PROCESSING_SERVER`     | `false`                    | `false` for _browsing_ container, `true` for _processing_ one                                         |
+| `MAVEN_XMX`             | `256m`                     | set a maximum heap for maven                                                                          |
+| `MAX_RAM_PERCENTAGE`    | `25`                       | percentage of the container limit to use forjahia memory heap (be aware that Jahia need at least 2GB) |
+| `RESTORE_MODULE_STATES` | `true`                     | restore modules and their states from database (forced to `false` when database is empty)             |
+| `LOG_MAX_DAYS`          | `5` (inherited from image) | Set container's logs retention rule                                                                   |
 
 
 ## Image build
