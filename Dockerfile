@@ -15,6 +15,7 @@ ARG MAVEN_VER="3.6.3"
 ARG MAVEN_BASE_URL="https://mirrors.ircam.fr/pub/apache/maven/maven-3"
 ARG MODULES_BASE_URL="https://store.jahia.com/cms/mavenproxy/private-app-store/org/jahia/modules"
 ARG IMAGEMAGICK_BINARIES_DOWNLOAD_URL="https://imagemagick.org/download/binaries/magick"
+ARG LOG_MAX_DAYS="5"
 
 # Jahia's properties
 ARG DS_IN_DB="true"
@@ -44,7 +45,7 @@ ENV MAX_UPLOAD="$MAX_UPLOAD"
 ENV MAX_RAM_PERCENTAGE="$MAX_RAM_PERCENTAGE"
 ENV MAVEN_OPTS="-Xmx$MAVEN_XMX"
 
-ENV CATALINA_BASE="/usr/local/tomcat" CATALINA_HOME="/usr/local/tomcat" CATALINA_TMPDIR="/usr/local/tomcat/temp"
+ENV CATALINA_BASE="/usr/local/tomcat" CATALINA_HOME="/usr/local/tomcat" CATALINA_TMPDIR="/usr/local/tomcat/temp" LOG_MAX_DAYS="$LOG_MAX_DAYS"
 
 ENV DBMS_TYPE="$DBMS_TYPE" DB_HOST="$DB_HOST" DB_NAME="$DB_NAME" DB_USER="$DB_USER" DB_PASS="$DB_PASS"
 ENV JMANAGER_USER="$JMANAGER_USER" JMANAGER_PASS="$JMANAGER_PASS" SUPER_USER_PASSWORD="$SUPER_USER_PASSWORD"
@@ -111,6 +112,9 @@ ADD filter_graphql_update.xml /tmp
 RUN line=$(awk '/<listener>/ {print NR-1; exit}' /usr/local/tomcat/webapps/ROOT/WEB-INF/web.xml) \
     && sed "$line r /tmp/filter_graphql_update.xml" -i /usr/local/tomcat/webapps/ROOT/WEB-INF/web.xml \
     && rm /tmp/filter_graphql_update.xml
+
+# logs retention
+RUN sed 's/^\([^#].*\.maxDays\s*=\s*\).*$/\1'$LOG_MAX_DAYS'/' -i /usr/local/tomcat/conf/logging.properties
 
 # Retrieve latest ImageMagick binaries
 RUN echo "Retrieve latest ImageMagick binaries..." \
