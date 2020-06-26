@@ -133,7 +133,8 @@ HEALTHCHECK --interval=30s \
             --timeout=5s \
             --start-period=600s \
             --retries=3 \
-            CMD jsonhealth=$(curl http://localhost:8080/healthcheck -s -u root:$SUPER_USER_PASSWORD); \
+            CMD cookie="/var/tmp/healthcheck.cookie" \
+                jsonhealth=$(curl http://localhost:8080/healthcheck -s -u root:$SUPER_USER_PASSWORD -c $cookie -b $cookie); \
                 exitcode=$?; \
                 if (test $exitcode -ne 0); then \
                     echo "cURL's exit code: $exitcode"; \
