@@ -140,10 +140,10 @@ HEALTHCHECK --interval=30s \
                     exit 1; \
                 fi; \
                 echo $jsonhealth; \
-                if (test "$(echo $jsonhealth | jq -r '.status')" = "RED"); then \
-                    exit 1; \
-                else \
+                if (test "$(echo $jsonhealth | jq -r '.status')" = "GREEN"); then \
                     exit 0; \
+                else \
+                    exit 1; \
                 fi
 
 CMD /entrypoint.sh
