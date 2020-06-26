@@ -9,7 +9,7 @@ ARG DBMS_TYPE="mariadb"
 ARG INSTALL_FILE_SUFFIX="_v8"
 ARG DEBUG_TOOLS="false"
 ARG FFMPEG="false"
-ARG HEALTHCHECK_VER="2.0.2"
+ARG HEALTHCHECK_VER="2.0.3"
 ARG LIBREOFFICE="false"
 ARG MAVEN_VER="3.6.3"
 ARG MAVEN_BASE_URL="https://mirrors.ircam.fr/pub/apache/maven/maven-3"
@@ -133,17 +133,18 @@ HEALTHCHECK --interval=30s \
             --timeout=5s \
             --start-period=600s \
             --retries=3 \
-            CMD jsonhealth=$(curl http://localhost:8080/healthcheck -s -u root:$SUPER_USER_PASSWORD); \
+            CMD cookie="/var/tmp/healthcheck.cookie" \
+                jsonhealth=$(curl http://localhost:8080/healthcheck -s -u root:$SUPER_USER_PASSWORD -c $cookie -b $cookie); \
                 exitcode=$?; \
                 if (test $exitcode -ne 0); then \
                     echo "cURL's exit code: $exitcode"; \
                     exit 1; \
                 fi; \
                 echo $jsonhealth; \
-                if (test "$(echo $jsonhealth | jq -r '.status')" = "RED"); then \
-                    exit 1; \
-                else \
+                if (test "$(echo $jsonhealth | jq -r '.status')" = "GREEN"); then \
                     exit 0; \
+                else \
+                    exit 1; \
                 fi
 
 CMD /entrypoint.sh
