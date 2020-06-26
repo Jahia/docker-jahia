@@ -1,16 +1,17 @@
 # Jahia Enterprise Docker image
 
 ## Build image
-| build arg      | default                                                                                                       | comment                                                                   |
-|----------------|---------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
-| `BASE_URL`     | `https://downloads.jahia.com/downloads/jahia/jahia7.3.4/Jahia-EnterpriseDistribution-7.3.4.1-r60321.4663.jar` |                                                                           |
-| `DBMS_TYPE`    | `mariadb`                                                                                                     | can be `mariadb` or `postgresql`                                          |
-| `DEBUG_TOOLS`  | `false`                                                                                                       | set to `true` in order to install `vim` and `binutils`                    |
-| `FFMPEG`       | `false`                                                                                                       | set to `true` in order to install `ffmpeg` and enable it for Jahia        |
-| `LIBREOFFICE`  | `false`                                                                                                       | set to `true` in order to install `libreoffice` and enable it for Jahia   |
-| `DS_IN_DB`     | `true`                                                                                                        | `true` for store files in database, `false` for store files in filesystem |
-| `DS_PATH`      | `/datastore/jahia`                                                                                            | datastore path if `DS_IN_DB` is set to `false`                            |
-| `LOG_MAX_DAYS` | `5`                                                                                                           | Set the default image logs retention rule                                 |
+| build arg         | default                                                                                                       | comment                                                                   |
+|-------------------|---------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| `BASE_URL`        | `https://downloads.jahia.com/downloads/jahia/jahia8.0.0/Jahia-EnterpriseDistribution-8.0.0.0-r60557.4681.jar` |                                                                           |
+| `DBMS_TYPE`       | `mariadb`                                                                                                     | can be `mariadb` or `postgresql`                                          |
+| `DEBUG_TOOLS`     | `false`                                                                                                       | set to `true` in order to install `vim` and `binutils`                    |
+| `FFMPEG`          | `false`                                                                                                       | set to `true` in order to install `ffmpeg` and enable it for Jahia        |
+| `LIBREOFFICE`     | `false`                                                                                                       | set to `true` in order to install `libreoffice` and enable it for Jahia   |
+| `DS_IN_DB`        | `true`                                                                                                        | `true` for store files in database, `false` for store files in filesystem |
+| `DS_PATH`         | `/datastore/jahia`                                                                                            | datastore path if `DS_IN_DB` is set to `false`                            |
+| `LOG_MAX_DAYS`    | `5`                                                                                                           | set the default image logs retention rule                                 |
+| `HEALTHCHECK_VER` | `2.0.3`                                                                                                       | you have to use `1.0.11` for jahia 7 image                                |
 
 
 ## Use image
@@ -43,7 +44,7 @@ You can find the create scripts in the image here: `/data/digital-factory-data/d
 In case a file installer.jar is present in the same folder as the dockerfile during the build, this installer is used instead of the one referenced in the Dockerfile
 
 ### Specifics for Jahia <8
-It is necessary to add the parameter `--build-arg INSTALL_FILE_SUFFIX=""` to the build command
+It is necessary to add the parameter `--build-arg INSTALL_FILE_SUFFIX=""` to the build command. You also have to use `HEALTHCHECK_VER=1.0.11`.
 
 ## Instanciate
 ### Using license file
