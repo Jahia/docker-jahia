@@ -39,7 +39,7 @@ commands:
         default: "true"
       healthcheck_ver:
         type: string
-        default: "2.0.2"
+        default: "2.0.3"
     steps:
       - setup_remote_docker
       - checkout
