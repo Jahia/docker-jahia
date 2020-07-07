@@ -114,7 +114,8 @@ RUN line=$(awk '/<listener>/ {print NR-1; exit}' /usr/local/tomcat/webapps/ROOT/
     && rm /tmp/filter_graphql_update.xml
 
 # logs retention
-RUN sed 's/^\([^#].*\.maxDays\s*=\s*\).*$/\1'$LOG_MAX_DAYS'/' -i /usr/local/tomcat/conf/logging.properties
+RUN sed 's/^\([^#].*\.maxDays\s*=\s*\).*$/\1'$LOG_MAX_DAYS'/' -i /usr/local/tomcat/conf/logging.properties \
+    && sed '/name="ROLL"/,+2 s/debug/warn/' -i /usr/local/tomcat/webapps/ROOT/WEB-INF/etc/config/log4j.xml
 
 # Retrieve latest ImageMagick binaries
 RUN echo "Retrieve latest ImageMagick binaries..." \
