@@ -47,6 +47,10 @@ In case a file installer.jar is present in the same folder as the dockerfile dur
 It is necessary to add the parameter `--build-arg INSTALL_FILE_SUFFIX=""` to the build command. You also have to use `HEALTHCHECK_VER=1.0.11`.
 
 ## Instanciate
+### Ports mapping
+This image exposes three TCP ports:
+- 8080 for http access
+- 7860 and 7870 for communication between jahia cluster nodes.
 ### Using license file
 In order to use your license file, use _volume_, eg:
 ```bash
