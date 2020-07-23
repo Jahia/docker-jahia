@@ -1,4 +1,12 @@
 ---
+
+############################
+# Workflow summary :
+# Build Jahia images and push them on a private repo for test purpose
+# Pull Jahia images and test them automatically
+# Ask for human validation before pushing images to the public repo
+############################
+
 version: 2.1
 
 orbs:
@@ -7,7 +15,7 @@ orbs:
 
 commands:
   build_jahia:
-    description: "Build Jahia's images"
+    description: "Build Jahia images and push them on a private repo for test purpose"
     parameters:
       repo:
         type: string
@@ -72,7 +80,7 @@ commands:
             ':building_construction: Building jahia:<< parameters.jver >><< parameters.tag_suffix >> successfully.'
 
   test_jahia:
-    description: "Testing Jahia's images"
+    description: "Pull jahia images from private repo and test them"
     parameters:
       jver:
         type: string
@@ -361,6 +369,7 @@ workflows:
   version: 2
   build_all_jahia:
     jobs:
+      ### Build images, push them to a private repo and test them ###
       ############# 8.0.0.0
       - build_8000:
           <<: *job_options
@@ -368,7 +377,6 @@ workflows:
           requires:
             - build_8000
           <<: *job_options
-      #####################
       ########## 8.0.0.0_fs
       ## build for k8s demo
       - build_8000_fs:
@@ -377,7 +385,6 @@ workflows:
           requires:
             - build_8000_fs
           <<: *job_options
-      #####################
       ############# 7.3.5.0
       - build_7350:
           <<: *job_options
@@ -385,7 +392,6 @@ workflows:
           requires:
             - build_7350
           <<: *job_options
-      #####################
       ############# 7.3.4.1
       - build_7341:
           <<: *job_options
@@ -393,8 +399,7 @@ workflows:
           requires:
             - build_7341
           <<: *job_options
-      #####################
-      # Then we put the workflow on hold until someone give approval
+      ### Then we put the workflow on hold until someone gives approval ###
       - human_validation:
           type: approval
           requires:
@@ -412,6 +417,7 @@ workflows:
             - test_7350
             - test_7341
           <<: *job_options
+      ### Push images to the public repo ###
       - publish_8000_fs:
           requires:
             - human_validation
