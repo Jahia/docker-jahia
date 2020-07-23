@@ -1,4 +1,12 @@
 ---
+
+############################
+# Workflow summary :
+# Build Jahia images and push them on a private repo for test purpose
+# Pull Jahia images and test them automatically
+# Ask for human validation before pushing images to the public repo
+############################
+
 version: 2.1
 
 orbs:
@@ -7,11 +15,11 @@ orbs:
 
 commands:
   build_jahia:
-    description: "Build Jahia's images"
+    description: "Build Jahia images and push them on a private repo for test purpose"
     parameters:
       repo:
         type: string
-        default: jahia/build2test
+        default: jahia/jahia_test
       jver:
         type: string
       base_url:
@@ -72,7 +80,7 @@ commands:
             ':building_construction: Building jahia:<< parameters.jver >><< parameters.tag_suffix >> successfully.'
 
   test_jahia:
-    description: "Testing Jahia's images"
+    description: "Pull jahia images from private repo and test them"
     parameters:
       jver:
         type: string
@@ -94,7 +102,7 @@ commands:
               sleep 1
             done
             echo "setting max_allowed_packet..."
-              mysql -u root -p$MYSQL_ROOT_PASSWORD -h $DB_HOST --protocol=tcp -e "set global max_allowed_packet=134217728;" 
+              mysql -u root -p$MYSQL_ROOT_PASSWORD -h $DB_HOST --protocol=tcp -e "set global max_allowed_packet=134217728;"
             echo "now importing schema..."
             echo  mysql -u $DB_USER -p$DB_PASS -h $DB_HOST --protocol=tcp -D $DB_NAME
             cat /data/digital-factory-data/db/sql/schema/mysql/01-* | \
@@ -138,7 +146,7 @@ commands:
         default: jahia/jahia
       repo_source:
         type: string
-        default: jahia/build2test
+        default: jahia/jahia_test
       jver:
         type: string
       tag_suffix:
@@ -241,7 +249,10 @@ jobs:
   test_8000:
     <<: *job_def_param
     docker:
-      - image: jahia/build2test:8.0.0.0<< parameters.suffixend >>
+      - image: jahia/jahia_test:8.0.0.0<< parameters.suffixend >>
+        auth:
+          username: $DOCKER_LOGIN
+          password: $DOCKER_PASSWORD
         <<: *environment_jahia
       - <<: *db_container
     steps:
@@ -270,7 +281,10 @@ jobs:
   test_8000_fs:
     <<: *job_def_param
     docker:
-      - image: jahia/build2test:8.0.0.0_fs<< parameters.suffixend >>
+      - image: jahia/jahia_test:8.0.0.0_fs<< parameters.suffixend >>
+        auth:
+          username: $DOCKER_LOGIN
+          password: $DOCKER_PASSWORD
         <<: *environment_jahia
       - <<: *db_container
     steps:
@@ -299,7 +313,10 @@ jobs:
   test_7350:
     <<: *job_def_param
     docker:
-      - image: jahia/build2test:7.3.5.0<< parameters.suffixend >>
+      - image: jahia/jahia_test:7.3.5.0<< parameters.suffixend >>
+        auth:
+          username: $DOCKER_LOGIN
+          password: $DOCKER_PASSWORD
         <<: *environment_jahia
       - <<: *db_container
     steps:
@@ -328,7 +345,10 @@ jobs:
   test_7341:
     <<: *job_def_param
     docker:
-      - image: jahia/build2test:7.3.4.1<< parameters.suffixend >>
+      - image: jahia/jahia_test:7.3.4.1<< parameters.suffixend >>
+        auth:
+          username: $DOCKER_LOGIN
+          password: $DOCKER_PASSWORD
         <<: *environment_jahia
       - <<: *db_container
     steps:
@@ -349,6 +369,7 @@ workflows:
   version: 2
   build_all_jahia:
     jobs:
+      ### Build images, push them to a private repo and test them ###
       ############# 8.0.0.0
       - build_8000:
           <<: *job_options
@@ -356,11 +377,6 @@ workflows:
           requires:
             - build_8000
           <<: *job_options
-      - publish_8000:
-          requires:
-            - test_8000
-          <<: *job_options
-      #####################
       ########## 8.0.0.0_fs
       ## build for k8s demo
       - build_8000_fs:
@@ -369,11 +385,6 @@ workflows:
           requires:
             - build_8000_fs
           <<: *job_options
-      - publish_8000_fs:
-          requires:
-            - test_8000_fs
-          <<: *job_options
-      #####################
       ############# 7.3.5.0
       - build_7350:
           <<: *job_options
@@ -381,11 +392,6 @@ workflows:
           requires:
             - build_7350
           <<: *job_options
-      - publish_7350:
-          requires:
-            - test_7350
-          <<: *job_options
-      #####################
       ############# 7.3.4.1
       - build_7341:
           <<: *job_options
@@ -393,8 +399,38 @@ workflows:
           requires:
             - build_7341
           <<: *job_options
-      - publish_7341:
+      ### Then we put the workflow on hold until someone gives approval ###
+      - human_validation:
+          type: approval
           requires:
+            - test_8000_fs
+            - test_8000
+            - test_7350
             - test_7341
           <<: *job_options
-      #####################
+      - slack/approval-notification:
+          include_project_field: true
+          message: ":female-police-officer: CircleCI requests your approval: please confirm that images are ready to be pushed in public repository..."
+          requires:
+            - test_8000_fs
+            - test_8000
+            - test_7350
+            - test_7341
+          <<: *job_options
+      ### Push images to the public repo ###
+      - publish_8000_fs:
+          requires:
+            - human_validation
+          <<: *job_options
+      - publish_8000:
+          requires:
+            - human_validation
+          <<: *job_options
+      - publish_7350:
+          requires:
+            - human_validation
+          <<: *job_options
+      - publish_7341:
+          requires:
+            - human_validation
+          <<: *job_options
