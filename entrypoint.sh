@@ -1,5 +1,18 @@
 #!/bin/bash
 
+function check_db_access {
+    for n in {1..667}; do
+        echo -n "Testing network database access on host $DB_HOST (test $n)... "
+        [ $n -gt 666 ] && echo "We are doomed !" && exit 1
+        if (nc -w 1 -v ${DB_HOST} ${DB_PORT} > /dev/null 2>&1 </dev/null); then
+            echo "SUCCESS"
+            break
+        else
+            echo "FAILED"
+        fi
+        sleep 1
+    done
+}
 
 echo "Update jahia.properties..."
 sed -e 's,${FACTORY_DATA},'$FACTORY_DATA',' \
@@ -72,28 +85,34 @@ echo "$SUPER_USER_PASSWORD" > $FACTORY_DATA/root.pwd
 
 
 case "$DBMS_TYPE" in
-    "mariadb") 
+    "mariadb")
         DB_PORT="3306"
+        check_db_access
+
+        tables_list=$(mysql -h $DB_HOST -u $DB_USER -p$DB_PASS -e "show tables" $DB_NAME)
+        if [ "$tables_list" == "" ]; then
+            echo "Database is empty. Going to initialize the database schema..."
+            mysql -h $DB_HOST -u $DB_USER -p$DB_PASS $DB_NAME <<< $(cat /data/digital-factory-data/db/sql/schema/mysql/01*)
+        fi
+
         testdb_result="$(mysql -u $DB_USER -p$DB_PASS -h $DB_HOST -D $DB_NAME -e "select count(REVISION_ID) from JR_J_LOCAL_REVISIONS;" -s)"
         ;;
     "postgresql")
         DB_PORT="5432"
+        check_db_access
+
+        tables_list=$(PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "\dt" 2> /dev/null)
+        if [ "$tables_list" == "" ]; then
+            files_path="/data/digital-factory-data/db/sql/schema/postgresql"
+            for file in $files_path/01*.sql; do
+                echo "Database is empty. Going to initialize the database schema..."
+                PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -f $file;
+            done
+        fi
+
         testdb_result="$(PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "select count(REVISION_ID) from JR_J_LOCAL_REVISIONS;" -tAq)"
         ;;
 esac
-
-
-for n in {1..667}; do
-    echo -n "Testing network database access on host $DB_HOST (test $n)... "
-    [ $n -gt 666 ] && echo "We are doomed !" && exit 1
-    if (nc -w 1 -v ${DB_HOST} ${DB_PORT} > /dev/null 2>&1 </dev/null); then
-        echo "SUCCESS"
-        break
-    else
-        echo "FAILED"
-    fi
-    sleep 1
-done
 
 if [ $testdb_result -eq 0 ]; then
     echo " -- Database is empty, do not try to restore module states"
@@ -106,8 +125,6 @@ if [ "$RESTORE_MODULE_STATES" == "true" ]; then
 else
     echo " -- Restore module states is not needed"
 fi
-
-
 
 
 echo "Start catalina..."
