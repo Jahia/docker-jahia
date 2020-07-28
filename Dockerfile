@@ -148,4 +148,4 @@ HEALTHCHECK --interval=30s \
                     exit 1; \
                 fi
 
-CMD /entrypoint.sh
+CMD ["/entrypoint.sh"]
