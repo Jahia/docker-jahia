@@ -58,9 +58,9 @@ docker run [some docker options here] \
     -e PROCESSING_SERVER="true" \
     -v /your/path/to/a/license.xml:/usr/local/tomcat/conf/digital-factory-config/jahia/license.xml:ro \
     [some other envs here] \
-    jahia/docker-enterprise:7.3.4.1
-
+    jahia/jahia:7.3.4.1
 ```
+
 ### Be aware of MAX_RAM_PERCENTAGE
 OpenJDK 11 default in a container context is tu use 25% of the container's memory limit.
 Please set this variable to always have at least 2GB for Jahia's heap.
