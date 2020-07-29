@@ -2,8 +2,8 @@
 
 function check_db_access {
     for n in {1..667}; do
+        [ $n -gt 666 ] && echo "Database unreachable... aborting" && exit 1
         echo -n "Testing network database access on host $DB_HOST (test $n)... "
-        [ $n -gt 666 ] && echo "We are doomed !" && exit 1
         if (nc -w 1 -v ${DB_HOST} ${DB_PORT} > /dev/null 2>&1 </dev/null); then
             echo "SUCCESS"
             break
@@ -89,6 +89,12 @@ case "$DBMS_TYPE" in
         DB_PORT="3306"
         check_db_access
 
+        db_exists=$(mysql -h $DB_HOST -u $DB_USER -p$DB_PASS -e "show databases like '$DB_NAME'")
+        if [ "$db_exists" == "" ]; then
+            echo "Database doesn't exist. Trying to create it..."
+            mysql -h $DB_HOST -u $DB_USER -p$DB_PASS -e "create database $DB_NAME CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+        fi
+
         tables_list=$(mysql -h $DB_HOST -u $DB_USER -p$DB_PASS -e "show tables" $DB_NAME)
         if [ "$tables_list" == "" ]; then
             echo "Database is empty. Going to initialize the database schema..."
@@ -100,6 +106,12 @@ case "$DBMS_TYPE" in
     "postgresql")
         DB_PORT="5432"
         check_db_access
+
+        db_exists=$(PGPASSWORD=$DB_PASS psql -tl -h $DB_HOST -U $DB_USER | awk -v db=$DB_NAME '{ if ($1 == db) print $1}')
+        if [ "$db_exists" == "" ]; then
+            echo "Database doesn't exist. Trying to create it..."
+            PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d postgres -c "create database $DB_NAME"
+        fi
 
         tables_list=$(PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "\dt" 2> /dev/null)
         if [ "$tables_list" == "" ]; then
