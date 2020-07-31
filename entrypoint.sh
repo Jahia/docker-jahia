@@ -93,6 +93,10 @@ case "$DBMS_TYPE" in
         if [ "$db_exists" == "" ]; then
             echo "Database doesn't exist. Trying to create it..."
             mysql -h $DB_HOST -u $DB_USER -p$DB_PASS -e "create database $DB_NAME CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+            if [ $? -ne 0 ]; then
+                echo "This image won't start without a working database. Exiting"
+                exit 1
+            fi
         fi
 
         tables_list=$(mysql -h $DB_HOST -u $DB_USER -p$DB_PASS -e "show tables" $DB_NAME)
@@ -107,10 +111,14 @@ case "$DBMS_TYPE" in
         DB_PORT="5432"
         check_db_access
 
-        db_exists=$(PGPASSWORD=$DB_PASS psql -tl -h $DB_HOST -U $DB_USER | awk -v db=$DB_NAME '{ if ($1 == db) print $1}')
-        if [ "$db_exists" == "" ]; then
+        PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER $DB_NAME -c '\x'
+        if [ "$?" -ne 0 ]; then
             echo "Database doesn't exist. Trying to create it..."
             PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d postgres -c "create database $DB_NAME"
+            if [ $? -ne 0 ]; then
+                echo "This image won't start without a working database. Exiting"
+                exit 1
+            fi
         fi
 
         tables_list=$(PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "\dt" 2> /dev/null)
