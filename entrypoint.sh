@@ -89,23 +89,23 @@ case "$DBMS_TYPE" in
         DB_PORT="3306"
         check_db_access
 
-        db_exists=$(mysql -h $DB_HOST -u $DB_USER -p$DB_PASS -e "show databases like '$DB_NAME'")
+        db_exists=$(mysql -h $DB_HOST -u $DB_USER -p$DB_PASS --protocol=tcp -e "show databases like '$DB_NAME'")
         if [ "$db_exists" == "" ]; then
             echo "Database doesn't exist. Trying to create it..."
-            mysql -h $DB_HOST -u $DB_USER -p$DB_PASS -e "create database $DB_NAME CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+            mysql -h $DB_HOST -u $DB_USER -p$DB_PASS --protocol=tcp -e "create database $DB_NAME CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
             if [ $? -ne 0 ]; then
                 echo "This image won't start without a working database. Exiting"
                 exit 1
             fi
         fi
 
-        tables_list=$(mysql -h $DB_HOST -u $DB_USER -p$DB_PASS -e "show tables" $DB_NAME)
+        tables_list=$(mysql -h $DB_HOST -u $DB_USER -p$DB_PASS --protocol=tcp -e "show tables" $DB_NAME)
         if [ "$tables_list" == "" ]; then
             echo "Database is empty. Going to initialize the database schema..."
-            mysql -h $DB_HOST -u $DB_USER -p$DB_PASS $DB_NAME <<< $(cat /data/digital-factory-data/db/sql/schema/mysql/01*)
+            mysql -h $DB_HOST -u $DB_USER -p$DB_PASS $DB_NAME --protocol=tcp <<< $(cat /data/digital-factory-data/db/sql/schema/mysql/01*)
         fi
 
-        testdb_result="$(mysql -u $DB_USER -p$DB_PASS -h $DB_HOST -D $DB_NAME -e "select count(REVISION_ID) from JR_J_LOCAL_REVISIONS;" -s)"
+        testdb_result="$(mysql -u $DB_USER -p$DB_PASS -h $DB_HOST -D $DB_NAME --protocol=tcp -e "select count(REVISION_ID) from JR_J_LOCAL_REVISIONS;" -s)"
         ;;
     "postgresql")
         DB_PORT="5432"
