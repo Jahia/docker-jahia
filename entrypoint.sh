@@ -56,11 +56,6 @@ sed -i 's/pattern="%h /pattern="%{org.apache.catalina.AccessLog.RemoteAddr}r /' 
 sed -i 's/prefix="localhost_access_log"/prefix="access_log" rotatable="true" maxDays="'$LOG_MAX_DAYS'"/g' /usr/local/tomcat/conf/server.xml
 sed -i 's/^\([^#].*\.maxDays\s*=\s*\).*$/\1'$LOG_MAX_DAYS'/' /usr/local/tomcat/conf/logging.properties
 
-echo "Update ${JMANAGER_USER} password..."
-python3 /usr/local/bin/reset-jahia-tools-manager-password.py "$(echo -n $JMANAGER_PASS|base64)" /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
-sed 's/${JMANAGER_USER}/'$JMANAGER_USER'/' -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
-
-
 echo "Update setenv.sh"
 echo "JAVA_OPTS=\"-XX:+UseParallelGC -Xlog:gc::time,uptime,level,pid,tid,tags -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=7199 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -XX:+HeapDumpOnOutOfMemoryError -XX:+PrintConcurrentLocks -XX:SurvivorRatio=8\"" > /usr/local/tomcat/bin/setenv.sh
 echo 'export JAVA_OPTS="$JAVA_OPTS -XX:+UseContainerSupport -XX:MaxRAMPercentage=$MAX_RAM_PERCENTAGE -DDB_HOST='$DB_HOST' -DDB_PASS='$DB_PASS' -DDB_NAME='$DB_NAME' -DDB_USER='$DB_USER'"' \
