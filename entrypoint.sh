@@ -69,7 +69,7 @@ sed -i 's/pattern="%h /pattern="%{org.apache.catalina.AccessLog.RemoteAddr}r /' 
 sed -i 's/prefix="localhost_access_log"/prefix="access_log" rotatable="true" maxDays="'$LOG_MAX_DAYS'"/g' /usr/local/tomcat/conf/server.xml
 sed -i 's/^\([^#].*\.maxDays\s*=\s*\).*$/\1'$LOG_MAX_DAYS'/' /usr/local/tomcat/conf/logging.properties
 
-if $(dpkg --compare-versions `cat version.txt` lt 8.0.1); then
+if $(dpkg --compare-versions `cat /usr/local/tomcat/jahia-version.txt` lt 8.0.1); then
   echo "Update ${JMANAGER_USER} password..."
   python3 /usr/local/bin/reset-jahia-tools-manager-password.py "$(echo -n $JMANAGER_PASS|base64)" /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
   sed 's/${JMANAGER_USER}/'$JMANAGER_USER'/' -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
