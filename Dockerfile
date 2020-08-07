@@ -100,9 +100,9 @@ RUN printf "Start Jahia's installation...\n" \
         -i /usr/local/tomcat/conf/catalina.properties \
     && echo
 
-RUN unzip -p /usr/local/tomcat/webapps/ROOT/WEB-INF/lib/jahia-impl-*.jar META-INF/MANIFEST.MF \
-    | awk '$1~/^Implementation-Version/ {split($2,a,"-");print a[1]}' > version.txt \
-    && echo Current Jahia Version : `cat version.txt`
+RUN unzip -aap /usr/local/tomcat/webapps/ROOT/WEB-INF/lib/jahia-impl-*.jar META-INF/MANIFEST.MF \
+    | awk '$1~/^Implementation-Version/ {split($2,a,"-");print a[1]}' > /usr/local/tomcat/jahia-version.txt \
+    && echo Current Jahia Version : `cat /usr/local/tomcat/jahia-version.txt`
 ADD $MODULES_BASE_URL/healthcheck/$HEALTHCHECK_VER/healthcheck-$HEALTHCHECK_VER.jar \
         $FACTORY_DATA/modules/healthcheck-$HEALTHCHECK_VER.jar
 
