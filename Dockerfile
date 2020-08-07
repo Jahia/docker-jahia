@@ -57,6 +57,10 @@ WORKDIR /tmp
 # these two files need to be copied on the same line since we want to copy installer.jar IF it exists, and copy doesn't support conditional copy (only copy if file exists)
 COPY entrypoint.sh installer.jar* ./
 
+
+ADD reset-jahia-tools-manager-password.py /usr/local/bin
+
+
 RUN apt update \
     && packages="python3 jq ncat libx11-6 libharfbuzz0b libfribidi0" \
     && case "$DBMS_TYPE" in \
