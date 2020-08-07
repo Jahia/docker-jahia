@@ -44,6 +44,8 @@
     </com.izforge.izpack.panels.UserInputPanel>
     <com.izforge.izpack.panels.UserInputPanel id="webApp">
         <userInput>
+            <entry key="jahiaManager.username" value="${JMANAGER_USER}"/>
+            <entry key="jahiaManager.password" value="${JMANAGER_PASSWORD}"/>
             <entry key="karaf.remoteShell.port" value="8101"/>
             <entry key="jahia.war.contextName" value=""/>
         </userInput>

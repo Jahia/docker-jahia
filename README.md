@@ -27,6 +27,8 @@ You can find the create scripts in the image here: `/data/digital-factory-data/d
 | `DB_USER`               | `jahia`                    |                                                                                                       |
 | `DB_PASS`               | `fakepassword`             |                                                                                                       |
 | `SUPER_USER_PASSWORD`   | `fakepassword`             | Jahia's _root_ password                                                                               |
+| `JMANAGER_USER`         | `jahia`                    | Jahia's _/tools_ user                                                                                 |
+| `JMANAGER_PASS`         | `fakepassword`             | Jahia's _/tools_ password                                                                             |
 | `MAX_UPLOAD`            | `268435456`                | max file size upload to Jahia                                                                         |
 | `OPERATING_MODE`        | `development`              | can be `development` or `production`                                                                  |
 | `PROCESSING_SERVER`     | `false`                    | `false` for _browsing_ container, `true` for _processing_ one                                         |
