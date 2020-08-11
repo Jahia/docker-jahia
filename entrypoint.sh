@@ -136,8 +136,9 @@ case "$DBMS_TYPE" in
 esac
 
 if [ $testdb_result -eq 0 ]; then
-    echo " -- Database is empty, do not try to restore module states"
+    echo " -- Database is empty, do not try to restore module states nor OSGi configuration"
     RESTORE_MODULE_STATES="false"
+    RESTORE_PERSISTED_CONFIGURATION="false"
 fi
 
 if [ "$RESTORE_MODULE_STATES" == "true" ]; then
@@ -145,6 +146,13 @@ if [ "$RESTORE_MODULE_STATES" == "true" ]; then
     touch "$FACTORY_DATA/[persisted-bundles].dorestore"
 else
     echo " -- Restore module states is not needed"
+fi
+
+if [ "$RESTORE_PERSISTED_CONFIGURATION" == "true" ]; then
+    echo " -- Restore OSGi configuration have been asked"
+    touch "$FACTORY_DATA/[persisted-configurations].dorestore"
+else
+    echo " -- Restore OSGi configuration is not needed"
 fi
 
 
