@@ -37,6 +37,7 @@ ARG DB_PASS="fakepassword"
 
 
 ENV RESTORE_MODULE_STATES="true"
+ENV RESTORE_PERSISTED_CONFIGURATION="true"
 ENV FACTORY_DATA="/data/digital-factory-data"
 ENV FACTORY_CONFIG="/usr/local/tomcat/conf/digital-factory-config"
 ENV PROCESSING_SERVER="$PROCESSING_SERVER"

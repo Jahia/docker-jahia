@@ -225,6 +225,7 @@ environment_jahia: &environment_jahia
     PROCESSING_SERVER: "true"
     MAX_RAM_PERCENTAGE: "70"
     RESTORE_MODULE_STATES: "false"
+    RESTORE_PERSISTED_CONFIGURATION: "false"
 environment_db: &environment_db
   environment:
     MYSQL_ROOT_PASSWORD: jahia
