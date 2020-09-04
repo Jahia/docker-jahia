@@ -1,6 +1,6 @@
 FROM tomcat:9.0
 
-MAINTAINER Jahia Devops team <paas@jahia.com>
+LABEL maintainer="Jahia Devops team <paas@jahia.com>"
 
 
 # Image components
@@ -53,18 +53,18 @@ ENV JMANAGER_USER="$JMANAGER_USER" JMANAGER_PASS="$JMANAGER_PASS" SUPER_USER_PAS
 ENV DS_IN_DB="$DS_IN_DB" DS_PATH="$DS_PATH"
 
 
-ADD config_mariadb$INSTALL_FILE_SUFFIX.xml /tmp
-ADD config_postgresql$INSTALL_FILE_SUFFIX.xml /tmp
-ADD entrypoint.sh /
+COPY config_mariadb$INSTALL_FILE_SUFFIX.xml /tmp
+COPY config_postgresql$INSTALL_FILE_SUFFIX.xml /tmp
+COPY entrypoint.sh /
 WORKDIR /tmp
 # these two files need to be copied on the same line since we want to copy installer.jar IF it exists, and copy doesn't support conditional copy (only copy if file exists)
 COPY entrypoint.sh installer.jar* ./
 
 
-ADD reset-jahia-tools-manager-password.py /usr/local/bin
+COPY reset-jahia-tools-manager-password.py /usr/local/bin
 
 
-RUN apt update \
+RUN apt-get update \
     && packages="python3 jq ncat libx11-6 libharfbuzz0b libfribidi0" \
     && case "$DBMS_TYPE" in \
         "mariadb") packages="$packages mariadb-client";; \
@@ -88,8 +88,8 @@ RUN printf "Start Jahia's installation...\n" \
         wget --progress=dot:giga -O installer.jar $BASE_URL; \
        fi \
     && wget --progress=dot:giga -O maven.zip $MAVEN_BASE_URL/$MAVEN_VER/binaries/apache-maven-$MAVEN_VER-bin.zip \
-    && sed -e 's/${MAVEN_VER}/'$MAVEN_VER'/' \
-        -e 's/${DS_IN_DB}/'$DS_IN_DB'/' \
+    && sed -e "s/\${MAVEN_VER}/$MAVEN_VER/" \
+        -e "s/\${DS_IN_DB}/$DS_IN_DB/" \
         -i /tmp/config_$DBMS_TYPE$INSTALL_FILE_SUFFIX.xml \
     && java -jar installer.jar config_$DBMS_TYPE$INSTALL_FILE_SUFFIX.xml \
     && unzip -q maven.zip -d /opt \
@@ -101,9 +101,11 @@ RUN printf "Start Jahia's installation...\n" \
         -i /usr/local/tomcat/conf/catalina.properties \
     && echo
 
+## fix hadolint DL4006
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN unzip -aap /usr/local/tomcat/webapps/ROOT/WEB-INF/lib/jahia-impl-*.jar META-INF/MANIFEST.MF \
     | awk '$1~/^Implementation-Version/ {split($2,a,"-");print a[1]}' > /usr/local/tomcat/jahia-version.txt \
-    && echo Current Jahia Version : `cat /usr/local/tomcat/jahia-version.txt`
+    && echo Current Jahia Version : "$(cat /usr/local/tomcat/jahia-version.txt)"
 ADD $MODULES_BASE_URL/healthcheck/$HEALTHCHECK_VER/healthcheck-$HEALTHCHECK_VER.jar \
         $FACTORY_DATA/modules/healthcheck-$HEALTHCHECK_VER.jar
 
@@ -112,7 +114,7 @@ COPY optional_modules* /tmp
 RUN mv /tmp/*.jar /data/digital-factory-data/modules || true
 
 # Add CORS filter for GraphQL queries
-ADD filter_graphql_update.xml /tmp
+COPY filter_graphql_update.xml /tmp
 RUN line=$(awk '/<listener>/ {print NR-1; exit}' /usr/local/tomcat/webapps/ROOT/WEB-INF/web.xml) \
     && sed "$line r /tmp/filter_graphql_update.xml" -i /usr/local/tomcat/webapps/ROOT/WEB-INF/web.xml \
     && rm /tmp/filter_graphql_update.xml
