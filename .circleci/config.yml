@@ -330,6 +330,38 @@ jobs:
           jver: "8.0.0.0"
           tag_suffix: "_fs<< parameters.suffixend >>"
   ##########################################
+################################## 7.3.5.1
+  build_7351:
+    <<: *job_def_param
+    executor: docker/docker
+    steps:
+      - build_jahia:
+          jver: "7.3.5.1"
+          xml_suffix: ""
+          tag_suffix: "<< parameters.suffixend >>"
+          base_url: "https://downloads.jahia.com/downloads/jahia/jahia7.3.5/Jahia-EnterpriseDistribution-7.3.5.1-r60677.4712.jar"
+          healthcheck_ver: "1.0.11"
+  test_7351:
+    <<: *job_def_param
+    docker:
+      - image: jahia/jahia_test:7.3.5.1<< parameters.suffixend >>
+        auth:
+          username: $DOCKER_LOGIN
+          password: $DOCKER_PASSWORD
+        <<: *environment_jahia
+      - <<: *db_container
+    steps:
+      - test_jahia:
+          jver: "7.3.5.1"
+          tag_suffix: "<< parameters.suffixend >>"
+  publish_7351:
+    <<: *job_def_param
+    executor: docker/docker
+    steps:
+      - publish_image:
+          jver: "7.3.5.1"
+          tag_suffix: "<< parameters.suffixend >>"
+  ##########################################  
   ################################## 7.3.5.0
   build_7350:
     <<: *job_def_param
@@ -362,6 +394,38 @@ jobs:
           jver: "7.3.5.0"
           tag_suffix: "<< parameters.suffixend >>"
   ##########################################
+  ################################## 7.3.4.2
+  build_7342:
+    <<: *job_def_param
+    executor: docker/docker
+    steps:
+      - build_jahia:
+          jver: "7.3.4.2"
+          xml_suffix: ""
+          tag_suffix: "<< parameters.suffixend >>"
+          base_url: "http://downloads.jahia.com/downloads/jahia/jahia7.3.4/Jahia-EnterpriseDistribution-7.3.4.2-r60675.4713.jar"
+          healthcheck_ver: "1.0.11"
+  test_7342:
+    <<: *job_def_param
+    docker:
+      - image: jahia/jahia_test:7.3.4.2<< parameters.suffixend >>
+        auth:
+          username: $DOCKER_LOGIN
+          password: $DOCKER_PASSWORD
+        <<: *environment_jahia
+      - <<: *db_container
+    steps:
+      - test_jahia:
+          jver: "7.3.4.2"
+          tag_suffix: "<< parameters.suffixend >>"
+  publish_7342:
+    <<: *job_def_param
+    executor: docker/docker
+    steps:
+      - publish_image:
+          jver: "7.3.4.2"
+          tag_suffix: "<< parameters.suffixend >>"
+  ##########################################  
   ################################## 7.3.4.1
   build_7341:
     <<: *job_def_param
@@ -423,6 +487,13 @@ workflows:
           requires:
             - build_8000_fs
           <<: *job_options
+      ############# 7.3.5.1
+      - build_7351:
+          <<: *job_options
+      - test_7351:
+          requires:
+            - build_7351
+          <<: *job_options          
       ############# 7.3.5.0
       - build_7350:
           <<: *job_options
@@ -430,6 +501,13 @@ workflows:
           requires:
             - build_7350
           <<: *job_options
+      ############# 7.3.4.2
+      - build_7342:
+          <<: *job_options
+      - test_7342:
+          requires:
+            - build_7342
+          <<: *job_options          
       ############# 7.3.4.1
       - build_7341:
           <<: *job_options
@@ -444,7 +522,9 @@ workflows:
             - test_8010
             - test_8000_fs
             - test_8000
+            - test_7351            
             - test_7350
+            - test_7342            
             - test_7341
           <<: *job_options
       - slack/approval-notification:
@@ -454,7 +534,9 @@ workflows:
             - test_8010
             - test_8000_fs
             - test_8000
+            - test_7351            
             - test_7350
+            - test_7342            
             - test_7341
           <<: *job_options
       ### Push images to the public repo ###
@@ -470,10 +552,18 @@ workflows:
           requires:
             - human_validation
           <<: *job_options
+      - publish_7351:
+          requires:
+            - human_validation
+          <<: *job_options          
       - publish_7350:
           requires:
             - human_validation
           <<: *job_options
+      - publish_7342:
+          requires:
+            - human_validation
+          <<: *job_options          
       - publish_7341:
           requires:
             - human_validation
