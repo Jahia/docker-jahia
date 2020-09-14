@@ -209,13 +209,18 @@ job_def_param: &job_def_param
       # WHEN USING A VALUE HERE,
       # YOU HAVE TO REMOVE "latest: true" IF
       # SET IN A JOB !
+
 filters: &filters
   filters:
     branches:
       only: master
+
 job_options: &job_options
-  context: cloud-qa
+  context:
+    - cloud-docker-hub
+    - cloud-slack
   <<: *filters
+
 environment_jahia: &environment_jahia
   environment:
     SUPER_USER_PASSWORD: jahia
@@ -226,12 +231,14 @@ environment_jahia: &environment_jahia
     MAX_RAM_PERCENTAGE: "70"
     RESTORE_MODULE_STATES: "false"
     RESTORE_PERSISTED_CONFIGURATION: "false"
+
 environment_db: &environment_db
   environment:
     MYSQL_ROOT_PASSWORD: jahia
     MYSQL_DATABASE: jahia
     MYSQL_USER: jahia
     MYSQL_PASSWORD: jahia
+
 db_container: &db_container
   - image: circleci/mysql:5.7
     <<: *environment_db
