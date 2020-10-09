@@ -579,11 +579,6 @@ workflows:
       ############# 8.0.1.0
       - build_8010:
           <<: *job_options
-      - scan_latest:
-          requires:
-            - build_8010
-          <<: *job_options
-          jver: "8.0.1.0"
       - test_8010:
           requires:
             - build_8010
@@ -642,7 +637,6 @@ workflows:
       - human_validation:
           type: approval
           requires:
-            - scan_latest
             - test_8010
             - test_8000_fs
             - test_8000
@@ -656,7 +650,6 @@ workflows:
           include_project_field: true
           message: ":female-police-officer: CircleCI requests your approval: please confirm that images are ready to be pushed in public repository..."
           requires:
-            - scan_latest
             - test_8010
             - test_8000_fs
             - test_8000
