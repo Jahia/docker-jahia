@@ -231,7 +231,7 @@
         { "id": "item208", "gate": "vulnerabilities", "trigger": "package", "trigger_id": "GHSA-h822-r4r5-v8jg+*" },
         { "id": "item209", "gate": "vulnerabilities", "trigger": "package", "trigger_id": "GHSA-j823-4qch-3rgm+*" },
         { "id": "item210", "gate": "vulnerabilities", "trigger": "package", "trigger_id": "GHSA-qmqc-x3r4-6v39+*" },
-        { "id": "item211", "gate": "vulnerabilities", "trigger": "package", "trigger_id": "GHSA-vgg8-72f2-qm23+*" }
+        { "id": "item211", "gate": "vulnerabilities", "trigger": "package", "trigger_id": "GHSA-vgg8-72f2-qm23+*" },
         { "id": "item212", "gate": "vulnerabilities", "trigger": "package", "trigger_id": "CVE-2020-10663+*" }
       ]
     }
