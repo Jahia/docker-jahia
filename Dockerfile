@@ -35,6 +35,9 @@ ARG DB_NAME="jahia"
 ARG DB_USER="jahia"
 ARG DB_PASS="fakepassword"
 
+# Container user
+ARG C_USER="tomcat"
+ARG C_GROUP="tomcat"
 
 ENV RESTORE_MODULE_STATES="true"
 ENV RESTORE_PERSISTED_CONFIGURATION="true"
@@ -131,6 +134,12 @@ RUN echo "Retrieve latest ImageMagick binaries..." \
     && mkdir /opt/magick \
     && mv squashfs-root/usr/* /opt/magick \
     && rm -rf /opt/magick/share/ squashfs-root/ ./magick
+
+# add container user and grant permissions
+RUN groupadd -g 999 $C_GROUP
+RUN useradd -r -u 999 -g $C_GROUP $C_USER
+RUN chown -R $C_USER: $CATALINA_BASE $FACTORY_DATA
+USER $C_USER
 
 EXPOSE 8080
 EXPOSE 7860
