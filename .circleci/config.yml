@@ -378,37 +378,6 @@ jobs:
           jver: "8.0.0.0"
           tag_suffix: "<< parameters.suffixend >>"
   ##########################################
-  ############################### 8.0.0.0_fs
-  build_8000_fs:
-    <<: *job_def_param
-    executor: docker/docker
-    steps:
-      - build_jahia:
-          jver: "8.0.0.0"
-          tag_suffix: "_fs<< parameters.suffixend >>"
-          ds_in_db: "false"
-          base_url: "https://downloads.jahia.com/downloads/jahia/jahia8.0.0/Jahia-EnterpriseDistribution-8.0.0.0-r60557.4681.jar"
-  test_8000_fs:
-    <<: *job_def_param
-    docker:
-      - image: jahia/jahia_test:8.0.0.0_fs<< parameters.suffixend >>
-        auth:
-          username: $DOCKER_LOGIN
-          password: $DOCKER_PASSWORD
-        <<: *environment_jahia
-      - <<: *db_container
-    steps:
-      - test_jahia:
-          jver: "8.0.0.0"
-          tag_suffix: "_fs<< parameters.suffixend >>"
-  publish_8000_fs:
-    <<: *job_def_param
-    executor: docker/docker
-    steps:
-      - publish_image:
-          jver: "8.0.0.0"
-          tag_suffix: "_fs<< parameters.suffixend >>"
-  ##########################################
 ################################## 7.3.6.0
   build_7360:
     <<: *job_def_param
@@ -590,14 +559,6 @@ workflows:
           requires:
             - build_8000
           <<: *job_options
-      ########## 8.0.0.0_fs
-      ## build for k8s demo
-      - build_8000_fs:
-          <<: *job_options
-      - test_8000_fs:
-          requires:
-            - build_8000_fs
-          <<: *job_options
       ############# 7.3.6.0
       - build_7360:
           <<: *job_options
@@ -638,7 +599,6 @@ workflows:
           type: approval
           requires:
             - test_8010
-            - test_8000_fs
             - test_8000
             - test_7360            
             - test_7351            
@@ -651,7 +611,6 @@ workflows:
           message: ":female-police-officer: CircleCI requests your approval: please confirm that images are ready to be pushed in public repository..."
           requires:
             - test_8010
-            - test_8000_fs
             - test_8000
             - test_7360            
             - test_7351            
@@ -661,10 +620,6 @@ workflows:
           <<: *job_options
       ### Push images to the public repo ###
       - publish_8010:
-          requires:
-            - human_validation
-          <<: *job_options
-      - publish_8000_fs:
           requires:
             - human_validation
           <<: *job_options
