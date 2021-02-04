@@ -409,7 +409,7 @@ jobs:
       - publish_image:
           jver: "7.3.6.0"
           tag_suffix: "<< parameters.suffixend >>"
-  ##########################################    
+  ##########################################
 ################################## 7.3.5.1
   build_7351:
     <<: *job_def_param
@@ -441,7 +441,7 @@ jobs:
       - publish_image:
           jver: "7.3.5.1"
           tag_suffix: "<< parameters.suffixend >>"
-  ##########################################  
+  ##########################################
   ################################## 7.3.5.0
   build_7350:
     <<: *job_def_param
@@ -505,7 +505,7 @@ jobs:
       - publish_image:
           jver: "7.3.4.2"
           tag_suffix: "<< parameters.suffixend >>"
-  ##########################################  
+  ##########################################
   ################################## 7.3.4.1
   build_7341:
     <<: *job_def_param
@@ -565,14 +565,14 @@ workflows:
       - test_7360:
           requires:
             - build_7360
-          <<: *job_options 
+          <<: *job_options
       ############# 7.3.5.1
       - build_7351:
           <<: *job_options
       - test_7351:
           requires:
             - build_7351
-          <<: *job_options          
+          <<: *job_options
       ############# 7.3.5.0
       - build_7350:
           <<: *job_options
@@ -586,7 +586,7 @@ workflows:
       - test_7342:
           requires:
             - build_7342
-          <<: *job_options          
+          <<: *job_options
       ############# 7.3.4.1
       - build_7341:
           <<: *job_options
@@ -600,10 +600,10 @@ workflows:
           requires:
             - test_8010
             - test_8000
-            - test_7360            
-            - test_7351            
+            - test_7360
+            - test_7351
             - test_7350
-            - test_7342            
+            - test_7342
             - test_7341
           <<: *job_options
       - slack/approval-notification:
@@ -612,10 +612,10 @@ workflows:
           requires:
             - test_8010
             - test_8000
-            - test_7360            
-            - test_7351            
+            - test_7360
+            - test_7351
             - test_7350
-            - test_7342            
+            - test_7342
             - test_7341
           <<: *job_options
       ### Push images to the public repo ###
@@ -630,11 +630,11 @@ workflows:
       - publish_7360:
           requires:
             - human_validation
-          <<: *job_options            
+          <<: *job_options
       - publish_7351:
           requires:
             - human_validation
-          <<: *job_options          
+          <<: *job_options
       - publish_7350:
           requires:
             - human_validation
