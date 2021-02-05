@@ -9,7 +9,7 @@ ARG DBMS_TYPE="mariadb"
 ARG INSTALL_FILE_SUFFIX="_v8"
 ARG DEBUG_TOOLS="false"
 ARG FFMPEG="false"
-ARG HEALTHCHECK_VER="2.0.3"
+ARG HEALTHCHECK_VER="2.3.0"
 ARG LIBREOFFICE="false"
 ARG MAVEN_VER="3.6.3"
 ARG MAVEN_BASE_URL="https://mirrors.ircam.fr/pub/apache/maven/maven-3"
@@ -35,6 +35,9 @@ ARG DB_NAME="jahia"
 ARG DB_USER="jahia"
 ARG DB_PASS="fakepassword"
 
+# Container user
+ARG C_USER="tomcat"
+ARG C_GROUP="tomcat"
 
 ENV RESTORE_MODULE_STATES="true"
 ENV RESTORE_PERSISTED_CONFIGURATION="true"
@@ -131,6 +134,12 @@ RUN echo "Retrieve latest ImageMagick binaries..." \
     && mkdir /opt/magick \
     && mv squashfs-root/usr/* /opt/magick \
     && rm -rf /opt/magick/share/ squashfs-root/ ./magick
+
+# add container user and grant permissions
+RUN groupadd -g 999 $C_GROUP
+RUN useradd -r -u 999 -g $C_GROUP $C_USER -d $CATALINA_BASE/temp -m
+RUN chown -R $C_USER: $CATALINA_BASE $FACTORY_DATA
+USER $C_USER
 
 EXPOSE 8080
 EXPOSE 7860

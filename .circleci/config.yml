@@ -407,37 +407,6 @@ jobs:
           jver: "8.0.0.0"
           tag_suffix: "<< parameters.suffixend >>"
   ##########################################
-  ############################### 8.0.0.0_fs
-  build_8000_fs:
-    <<: *job_def_param
-    executor: docker/docker
-    steps:
-      - build_jahia:
-          jver: "8.0.0.0"
-          tag_suffix: "_fs<< parameters.suffixend >>"
-          ds_in_db: "false"
-          base_url: "https://downloads.jahia.com/downloads/jahia/jahia8.0.0/Jahia-EnterpriseDistribution-8.0.0.0-r60557.4681.jar"
-  test_8000_fs:
-    <<: *job_def_param
-    docker:
-      - image: jahia/jahia_test:8.0.0.0_fs<< parameters.suffixend >>
-        auth:
-          username: $DOCKER_LOGIN
-          password: $DOCKER_PASSWORD
-        <<: *environment_jahia
-      - <<: *db_container
-    steps:
-      - test_jahia:
-          jver: "8.0.0.0"
-          tag_suffix: "_fs<< parameters.suffixend >>"
-  publish_8000_fs:
-    <<: *job_def_param
-    executor: docker/docker
-    steps:
-      - publish_image:
-          jver: "8.0.0.0"
-          tag_suffix: "_fs<< parameters.suffixend >>"
-  ##########################################
 ################################## 7.3.6.0
   build_7360:
     <<: *job_def_param
@@ -469,7 +438,7 @@ jobs:
       - publish_image:
           jver: "7.3.6.0"
           tag_suffix: "<< parameters.suffixend >>"
-  ##########################################    
+  ##########################################
 ################################## 7.3.5.1
   build_7351:
     <<: *job_def_param
@@ -501,7 +470,7 @@ jobs:
       - publish_image:
           jver: "7.3.5.1"
           tag_suffix: "<< parameters.suffixend >>"
-  ##########################################  
+  ##########################################
   ################################## 7.3.5.0
   build_7350:
     <<: *job_def_param
@@ -565,7 +534,7 @@ jobs:
       - publish_image:
           jver: "7.3.4.2"
           tag_suffix: "<< parameters.suffixend >>"
-  ##########################################  
+  ##########################################
   ################################## 7.3.4.1
   build_7341:
     <<: *job_def_param
@@ -626,28 +595,20 @@ workflows:
           requires:
             - build_8000
           <<: *job_options
-      ########## 8.0.0.0_fs
-      ## build for k8s demo
-      - build_8000_fs:
-          <<: *job_options
-      - test_8000_fs:
-          requires:
-            - build_8000_fs
-          <<: *job_options
       ############# 7.3.6.0
       - build_7360:
           <<: *job_options
       - test_7360:
           requires:
             - build_7360
-          <<: *job_options 
+          <<: *job_options
       ############# 7.3.5.1
       - build_7351:
           <<: *job_options
       - test_7351:
           requires:
             - build_7351
-          <<: *job_options          
+          <<: *job_options
       ############# 7.3.5.0
       - build_7350:
           <<: *job_options
@@ -661,7 +622,7 @@ workflows:
       - test_7342:
           requires:
             - build_7342
-          <<: *job_options          
+          <<: *job_options
       ############# 7.3.4.1
       - build_7341:
           <<: *job_options
@@ -675,12 +636,11 @@ workflows:
           requires:
             - test_8020
             - test_8010
-            - test_8000_fs
             - test_8000
-            - test_7360            
-            - test_7351            
+            - test_7360
+            - test_7351
             - test_7350
-            - test_7342            
+            - test_7342
             - test_7341
           <<: *job_options
       - slack/approval-notification:
@@ -689,12 +649,11 @@ workflows:
           requires:
             - test_8020
             - test_8010
-            - test_8000_fs
             - test_8000
-            - test_7360            
-            - test_7351            
+            - test_7360
+            - test_7351
             - test_7350
-            - test_7342            
+            - test_7342
             - test_7341
           <<: *job_options
       ### Push images to the public repo ###
@@ -706,10 +665,6 @@ workflows:
           requires:
             - human_validation
           <<: *job_options
-      - publish_8000_fs:
-          requires:
-            - human_validation
-          <<: *job_options
       - publish_8000:
           requires:
             - human_validation
@@ -717,11 +672,11 @@ workflows:
       - publish_7360:
           requires:
             - human_validation
-          <<: *job_options            
+          <<: *job_options
       - publish_7351:
           requires:
             - human_validation
-          <<: *job_options          
+          <<: *job_options
       - publish_7350:
           requires:
             - human_validation
