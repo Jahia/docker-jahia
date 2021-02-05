@@ -302,14 +302,14 @@ db_container: &db_container
 
 jobs:
   ################################## 8.0.0.0
-  build_8010:
+  build_8020:
     <<: *job_def_param
     executor: docker/docker
     steps:
       - build_jahia:
-          jver: "8.0.1.0"
+          jver: "8.0.2.0"
           tag_suffix: "<< parameters.suffixend >>"
-          base_url: "https://downloads.jahia.com/downloads/jahia/jahia8.0.1/Jahia-EnterpriseDistribution-8.0.1.0-r60669.4716.jar"
+          base_url: "https://downloads.jahia.com/downloads/jahia/jahia8.0.2/Jahia-EnterpriseDistribution-8.0.2.0-r60910.4774.jar"
   scan_latest:
     parameters:
       slack_channel:
@@ -326,6 +326,35 @@ jobs:
           registry_user: "$DOCKER_LOGIN"
           registry_pass: "$DOCKER_PASSWORD"
           slack_channel: "<< parameters.slack_channel >>"
+  test_8020:
+    <<: *job_def_param
+    docker:
+      - image: jahia/jahia_test:8.0.2.0<< parameters.suffixend >>
+        auth:
+          username: $DOCKER_LOGIN
+          password: $DOCKER_PASSWORD
+        <<: *environment_jahia
+      - <<: *db_container
+    steps:
+      - test_jahia:
+          jver: "8.0.2.0"
+          tag_suffix: "<< parameters.suffixend >>"
+  publish_8020:
+    <<: *job_def_param
+    executor: docker/docker
+    steps:
+      - publish_image:
+          jver: "8.0.2.0"
+          tag_suffix: "<< parameters.suffixend >>"
+          latest: true  # /!\ DON'T set true if test build (see suffixend parameter)  
+  build_8010:
+    <<: *job_def_param
+    executor: docker/docker
+    steps:
+      - build_jahia:
+          jver: "8.0.1.0"
+          tag_suffix: "<< parameters.suffixend >>"
+          base_url: "https://downloads.jahia.com/downloads/jahia/jahia8.0.1/Jahia-EnterpriseDistribution-8.0.1.0-r60669.4716.jar"
   test_8010:
     <<: *job_def_param
     docker:
@@ -576,6 +605,13 @@ workflows:
   build_all_jahia:
     jobs:
       ### Build images, push them to a private repo and test them ###
+      ############# 8.0.2.0
+      - build_8020:
+          <<: *job_options
+      - test_8020:
+          requires:
+            - build_8020
+          <<: *job_options      
       ############# 8.0.1.0
       - build_8010:
           <<: *job_options
@@ -637,6 +673,7 @@ workflows:
       - human_validation:
           type: approval
           requires:
+            - test_8020
             - test_8010
             - test_8000_fs
             - test_8000
@@ -650,6 +687,7 @@ workflows:
           include_project_field: true
           message: ":female-police-officer: CircleCI requests your approval: please confirm that images are ready to be pushed in public repository..."
           requires:
+            - test_8020
             - test_8010
             - test_8000_fs
             - test_8000
@@ -660,6 +698,10 @@ workflows:
             - test_7341
           <<: *job_options
       ### Push images to the public repo ###
+      - publish_8020:
+          requires:
+            - human_validation
+          <<: *job_options      
       - publish_8010:
           requires:
             - human_validation
@@ -701,4 +743,4 @@ workflows:
       - scan_latest:
           <<: *job_options
           slack_channel: "team-cloud-security"
-          jver: "8.0.1.0"
+          jver: "8.0.2.0"
