@@ -355,22 +355,6 @@ jobs:
           jver: "8.0.1.0"
           tag_suffix: "<< parameters.suffixend >>"
           base_url: "https://downloads.jahia.com/downloads/jahia/jahia8.0.1/Jahia-EnterpriseDistribution-8.0.1.0-r60669.4716.jar"
-  scan_latest:
-    parameters:
-      slack_channel:
-        type: string
-        default: "team-cloud-notif"
-      jver:
-        type: string
-      <<: *suffixend_def_param
-    executor: anchore/anchore_engine
-    steps:
-      - scan_jahia:
-          jver: "<< parameters.jver >>"
-          tag_suffix: "<< parameters.suffixend >>"
-          registry_user: "$DOCKER_LOGIN"
-          registry_pass: "$DOCKER_PASSWORD"
-          slack_channel: "<< parameters.slack_channel >>"
   test_8010:
     <<: *job_def_param
     docker:
