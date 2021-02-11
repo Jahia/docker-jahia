@@ -139,6 +139,7 @@ RUN echo "Retrieve latest ImageMagick binaries..." \
 RUN groupadd -g 999 $C_GROUP
 RUN useradd -r -u 999 -g $C_GROUP $C_USER -d $CATALINA_BASE/temp -m
 RUN chown -R $C_USER: $CATALINA_BASE $FACTORY_DATA
+RUN chown $C_USER: /tmp/entrypoint.sh
 USER $C_USER
 
 EXPOSE 8080
