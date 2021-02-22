@@ -407,6 +407,38 @@ jobs:
           jver: "8.0.0.0"
           tag_suffix: "<< parameters.suffixend >>"
   ##########################################
+################################## 7.3.7.0
+  build_7370:
+    <<: *job_def_param
+    executor: docker/docker
+    steps:
+      - build_jahia:
+          jver: "7.3.7.0"
+          xml_suffix: ""
+          tag_suffix: "<< parameters.suffixend >>"
+          base_url: "https://downloads.jahia.com/downloads/jahia/jahia7.3.7/Jahia-EnterpriseDistribution-7.3.7.0-r60918.4777.jar"
+          healthcheck_ver: "1.0.11"
+  test_7370:
+    <<: *job_def_param
+    docker:
+      - image: jahia/jahia_test:7.3.7.0<< parameters.suffixend >>
+        auth:
+          username: $DOCKER_LOGIN
+          password: $DOCKER_PASSWORD
+        <<: *environment_jahia
+      - <<: *db_container
+    steps:
+      - test_jahia:
+          jver: "7.3.7.0"
+          tag_suffix: "<< parameters.suffixend >>"
+  publish_7370:
+    <<: *job_def_param
+    executor: docker/docker
+    steps:
+      - publish_image:
+          jver: "7.3.7.0"
+          tag_suffix: "<< parameters.suffixend >>"
+  ##########################################  
 ################################## 7.3.6.0
   build_7360:
     <<: *job_def_param
@@ -595,6 +627,13 @@ workflows:
           requires:
             - build_8000
           <<: *job_options
+      ############# 7.3.7.0
+      - build_7370:
+          <<: *job_options
+      - test_7370:
+          requires:
+            - build_7370
+          <<: *job_options
       ############# 7.3.6.0
       - build_7360:
           <<: *job_options
@@ -637,6 +676,7 @@ workflows:
             - test_8020
             - test_8010
             - test_8000
+            - test_7370
             - test_7360
             - test_7351
             - test_7350
@@ -650,6 +690,7 @@ workflows:
             - test_8020
             - test_8010
             - test_8000
+            - test_7370
             - test_7360
             - test_7351
             - test_7350
@@ -669,6 +710,10 @@ workflows:
           requires:
             - human_validation
           <<: *job_options
+      - publish_7370:
+          requires:
+            - human_validation
+          <<: *job_options          
       - publish_7360:
           requires:
             - human_validation
