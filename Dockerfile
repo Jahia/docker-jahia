@@ -138,7 +138,8 @@ RUN echo "Retrieve latest ImageMagick binaries..." \
 # add container user and grant permissions
 RUN groupadd -g 999 $C_GROUP
 RUN useradd -r -u 999 -g $C_GROUP $C_USER -d $CATALINA_BASE/temp -m
-RUN chown -R $C_USER: $CATALINA_BASE $FACTORY_DATA
+RUN chown -R $C_USER: $CATALINA_BASE $FACTORY_DATA \
+    && chown $C_USER: /entrypoint.sh
 USER $C_USER
 
 EXPOSE 8080
