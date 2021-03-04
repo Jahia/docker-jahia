@@ -298,10 +298,41 @@ environment_db: &environment_db
 db_container: &db_container
   - image: circleci/mysql:5.7
     <<: *environment_db
-####################################
 
 jobs:
-  ################################## 8.0.0.0
+  ##########################################
+  ################################## 8.0.2.0_fs
+  build_8020_fs:
+    <<: *job_def_param
+    executor: docker/docker
+    steps:
+      - build_jahia:
+          jver: "8.0.2.0"
+          ds_in_db: "false"
+          tag_suffix: "_fs<< parameters.suffixend >>"
+          base_url: "https://downloads.jahia.com/downloads/jahia/jahia8.0.2/Jahia-EnterpriseDistribution-8.0.2.0-r60910.4774.jar"
+  test_8020_fs:
+    <<: *job_def_param
+    docker:
+      - image: jahia/jahia_test:8.0.2.0_fs<< parameters.suffixend >>
+        auth:
+          username: $DOCKER_LOGIN
+          password: $DOCKER_PASSWORD
+        <<: *environment_jahia
+      - <<: *db_container
+    steps:
+      - test_jahia:
+          jver: "8.0.2.0"
+          tag_suffix: "_fs<< parameters.suffixend >>"
+  publish_8020_fs:
+    <<: *job_def_param
+    executor: docker/docker
+    steps:
+      - publish_image:
+          jver: "8.0.2.0"
+          tag_suffix: "_fs<< parameters.suffixend >>"
+  ##########################################
+  ################################## 8.0.2.0
   build_8020:
     <<: *job_def_param
     executor: docker/docker
@@ -347,6 +378,8 @@ jobs:
           jver: "8.0.2.0"
           tag_suffix: "<< parameters.suffixend >>"
           latest: true  # /!\ DON'T set true if test build (see suffixend parameter)  
+  ##########################################
+  ################################## 8.0.1.0
   build_8010:
     <<: *job_def_param
     executor: docker/docker
@@ -375,7 +408,6 @@ jobs:
       - publish_image:
           jver: "8.0.1.0"
           tag_suffix: "<< parameters.suffixend >>"
-          latest: true  # /!\ DON'T set true if test build (see suffixend parameter)
   ##########################################
   ################################## 8.0.0.0
   build_8000:
@@ -606,6 +638,14 @@ workflows:
   build_all_jahia:
     jobs:
       ### Build images, push them to a private repo and test them ###
+      ############# 8.0.2.0_fs
+      ## build for k8s demo
+      - build_8020_fs:
+          <<: *job_options
+      - test_8020_fs:
+          requires:
+            - build_8020_fs
+          <<: *job_options
       ############# 8.0.2.0
       - build_8020:
           <<: *job_options
@@ -673,6 +713,7 @@ workflows:
       - human_validation:
           type: approval
           requires:
+            - test_8020_fs
             - test_8020
             - test_8010
             - test_8000
@@ -687,6 +728,7 @@ workflows:
           include_project_field: true
           message: ":female-police-officer: CircleCI requests your approval: please confirm that images are ready to be pushed in public repository..."
           requires:
+            - test_8020_fs
             - test_8020
             - test_8010
             - test_8000
@@ -698,6 +740,10 @@ workflows:
             - test_7341
           <<: *job_options
       ### Push images to the public repo ###
+      - publish_8020_fs:
+          requires:
+            - human_validation
+          <<: *job_options
       - publish_8020:
           requires:
             - human_validation
