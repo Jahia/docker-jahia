@@ -48,7 +48,7 @@ commands:
         default: "true"
       healthcheck_ver:
         type: string
-        default: "2.0.3"
+        default: "2.3.1"
     steps:
       - setup_remote_docker
       - checkout
@@ -449,7 +449,7 @@ jobs:
           xml_suffix: ""
           tag_suffix: "<< parameters.suffixend >>"
           base_url: "https://downloads.jahia.com/downloads/jahia/jahia7.3.7/Jahia-EnterpriseDistribution-7.3.7.0-r60918.4777.jar"
-          healthcheck_ver: "1.0.11"
+          healthcheck_ver: "1.2.1"
   test_7370:
     <<: *job_def_param
     docker:
@@ -481,7 +481,7 @@ jobs:
           xml_suffix: ""
           tag_suffix: "<< parameters.suffixend >>"
           base_url: "https://downloads.jahia.com/downloads/jahia/jahia7.3.6/Jahia-EnterpriseDistribution-7.3.6.0-r60724.4725.jar"
-          healthcheck_ver: "1.0.11"
+          healthcheck_ver: "1.2.1"
   test_7360:
     <<: *job_def_param
     docker:
@@ -513,7 +513,7 @@ jobs:
           xml_suffix: ""
           tag_suffix: "<< parameters.suffixend >>"
           base_url: "https://downloads.jahia.com/downloads/jahia/jahia7.3.5/Jahia-EnterpriseDistribution-7.3.5.1-r60677.4712.jar"
-          healthcheck_ver: "1.0.11"
+          healthcheck_ver: "1.2.1"
   test_7351:
     <<: *job_def_param
     docker:
@@ -545,7 +545,7 @@ jobs:
           xml_suffix: ""
           tag_suffix: "<< parameters.suffixend >>"
           base_url: "https://downloads.jahia.com/downloads/jahia/jahia7.3.5/Jahia-EnterpriseDistribution-7.3.5.0-r60598.4688.jar"
-          healthcheck_ver: "1.0.11"
+          healthcheck_ver: "1.2.1"
   test_7350:
     <<: *job_def_param
     docker:
@@ -577,7 +577,7 @@ jobs:
           xml_suffix: ""
           tag_suffix: "<< parameters.suffixend >>"
           base_url: "http://downloads.jahia.com/downloads/jahia/jahia7.3.4/Jahia-EnterpriseDistribution-7.3.4.2-r60675.4713.jar"
-          healthcheck_ver: "1.0.11"
+          healthcheck_ver: "1.2.1"
   test_7342:
     <<: *job_def_param
     docker:
@@ -609,7 +609,7 @@ jobs:
           xml_suffix: ""
           tag_suffix: "<< parameters.suffixend >>"
           base_url: "http://downloads.jahia.com/downloads/jahia/jahia7.3.4/Jahia-EnterpriseDistribution-7.3.4.1-r60321.4663.jar"
-          healthcheck_ver: "1.0.11"
+          healthcheck_ver: "1.2.1"
   test_7341:
     <<: *job_def_param
     docker:

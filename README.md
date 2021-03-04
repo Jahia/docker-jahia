@@ -11,7 +11,7 @@
 | `DS_IN_DB`        | `true`                                                                                                        | `true` for store files in database, `false` for store files in filesystem |
 | `DS_PATH`         | `/datastore/jahia`                                                                                            | datastore path if `DS_IN_DB` is set to `false`                            |
 | `LOG_MAX_DAYS`    | `5`                                                                                                           | set the default image logs retention rule                                 |
-| `HEALTHCHECK_VER` | `2.0.3`                                                                                                       | you have to use `1.0.11` for jahia 7 image                                |
+| `HEALTHCHECK_VER` | `2.3.1`                                                                                                       | you have to use `1.2.1` for jahia 7 image                                 |
 
 
 ## Use image
@@ -45,7 +45,7 @@ You can find the create scripts in the image here: `/data/digital-factory-data/d
 In case a file installer.jar is present in the same folder as the dockerfile during the build, this installer is used instead of the one referenced in the Dockerfile
 
 ### Specifics for Jahia <8
-It is necessary to add the parameter `--build-arg INSTALL_FILE_SUFFIX=""` to the build command. You also have to use `HEALTHCHECK_VER=1.0.11`.
+It is necessary to add the parameter `--build-arg INSTALL_FILE_SUFFIX=""` to the build command. You also have to use `HEALTHCHECK_VER=1.2.1`.
 
 ## Instanciate
 ### Ports mapping
