@@ -140,9 +140,8 @@ RUN groupadd -g 999 $C_GROUP
 RUN useradd -r -u 999 -g $C_GROUP $C_USER -d $CATALINA_BASE/temp -m
 RUN chown -R $C_USER: $CATALINA_BASE $FACTORY_DATA \
     && chown $C_USER: /entrypoint.sh
-RUN $DS_IN_DB && ( mkdir -p $DS_PATH \
-    && chown -R $C_USER:$C_GROUP $DS_PATH ) \
-    || true
+RUN $DS_IN_DB || ( mkdir -p $DS_PATH \
+    && chown -R $C_USER:$C_GROUP $DS_PATH )
 USER $C_USER
 
 EXPOSE 8080
