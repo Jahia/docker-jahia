@@ -100,7 +100,7 @@ RUN printf "Start Jahia's installation...\n" \
     && rm -f installer.jar config_*.xml maven.zip \
     && mv /data/jahia/tomcat/webapps/* /usr/local/tomcat/webapps \
     && mv /data/jahia/tomcat/lib/* /usr/local/tomcat/lib/ \
-    && mv /data/digital-factory-data /usr/local/tomcat/digital-factory-data \
+    && mv ${FACTORY_DATA} ${INITIAL_FACTORY_DATA} \
     && chmod +x /entrypoint.sh \
     && sed -e "s#common.loader=\"\\\$#common.loader=\"/usr/local/tomcat/conf/digital-factory-config\",\"\$#g" \
         -i /usr/local/tomcat/conf/catalina.properties \
@@ -112,7 +112,7 @@ RUN unzip -aap /usr/local/tomcat/webapps/ROOT/WEB-INF/lib/jahia-impl-*.jar META-
     | awk '$1~/^Implementation-Version/ {split($2,a,"-");print a[1]}' > /usr/local/tomcat/jahia-version.txt \
     && echo Current Jahia Version : "$(cat /usr/local/tomcat/jahia-version.txt)"
 ADD $MODULES_BASE_URL/healthcheck/$HEALTHCHECK_VER/healthcheck-$HEALTHCHECK_VER.jar \
-        /usr/local/modules/healthcheck-$HEALTHCHECK_VER.jar
+        ${INITIAL_FACTORY_DATA}/modules/healthcheck-$HEALTHCHECK_VER.jar
 
 COPY optional_modules* /tmp
 ## allows the Docker build to continue if no modules were provided
