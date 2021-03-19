@@ -14,6 +14,11 @@ function check_db_access {
     done
 }
 
+if [ ! -f "/usr/local/tomcat/conf/configured" ]; then
+    cp -a ${INITIAL_FACTORY_DATA}/* ${FACTORY_DATA}
+    touch "/usr/local/tomcat/conf/configured"
+fi
+
 echo "Update jahia.properties..."
 sed -e 's,${FACTORY_DATA},'$FACTORY_DATA',' \
     -e "s/^#\?\s*\(operatingMode\s*=\).*/\1 $OPERATING_MODE/" \
@@ -60,8 +65,8 @@ sed -e "s/^#\?\s*\(processingServer\s*=\).*/\1 ${PROCESSING_SERVER}/" \
     -e "s/\(cluster.node.serverId\s*=\).*/\1 jahia-$(hostname)/" \
     -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.node.properties
 
-echo "Update /data/digital-factory-data/karaf/etc/org.apache.karaf.cellar.groups.cfg..."
-sed -i 's/\(^default.config.sync = \)cluster/\1disabled/' /data/digital-factory-data/karaf/etc/org.apache.karaf.cellar.groups.cfg
+echo "Update ${FACTORY_DATA}/karaf/etc/org.apache.karaf.cellar.groups.cfg..."
+sed -i 's/\(^default.config.sync = \)cluster/\1disabled/' ${FACTORY_DATA}/karaf/etc/org.apache.karaf.cellar.groups.cfg
 
 echo "Update /usr/local/tomcat/conf/server.xml..."
 sed -i '/<!-- Access log processes all example./i \\t<!-- Remote IP Valve -->\n \t<Valve className="org.apache.catalina.valves.RemoteIpValve" protocolHeader="X-Forwarded-Proto" />\n' /usr/local/tomcat/conf/server.xml
@@ -103,7 +108,7 @@ case "$DBMS_TYPE" in
         tables_list=$(mysql -h $DB_HOST -u $DB_USER -p$DB_PASS --protocol=tcp -e "show tables" $DB_NAME)
         if [ "$tables_list" == "" ]; then
             echo "Database is empty. Going to initialize the database schema..."
-            mysql -h $DB_HOST -u $DB_USER -p$DB_PASS $DB_NAME --protocol=tcp <<< $(cat /data/digital-factory-data/db/sql/schema/mysql/01*)
+            mysql -h $DB_HOST -u $DB_USER -p$DB_PASS $DB_NAME --protocol=tcp <<< $(cat ${FACTORY_DATA}/db/sql/schema/mysql/01*)
         fi
 
         testdb_result="$(mysql -u $DB_USER -p$DB_PASS -h $DB_HOST -D $DB_NAME --protocol=tcp -e "select count(REVISION_ID) from JR_J_LOCAL_REVISIONS;" -s)"
@@ -124,7 +129,7 @@ case "$DBMS_TYPE" in
 
         tables_list=$(PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "\dt" 2> /dev/null)
         if [ "$tables_list" == "" ]; then
-            files_path="/data/digital-factory-data/db/sql/schema/postgresql"
+            files_path="${FACTORY_DATA}/db/sql/schema/postgresql"
             for file in $files_path/01*.sql; do
                 echo "Database is empty. Going to initialize the database schema..."
                 PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -f $file;
