@@ -141,7 +141,7 @@ RUN echo "Retrieve latest ImageMagick binaries..." \
 RUN groupadd -g 999 $C_GROUP
 RUN useradd -r -u 999 -g $C_GROUP $C_USER -d $CATALINA_BASE/temp -m
 RUN mkdir -p $FACTORY_DATA \
-    && chown -R $C_USER: $CATALINA_BASE $FACTORY_DATA \
+    && chown -R $C_USER: $CATALINA_BASE /data \
     && chown $C_USER: /entrypoint.sh
 RUN $DS_IN_DB || ( mkdir -p $DS_PATH \
     && chown -R $C_USER:$C_GROUP $DS_PATH )

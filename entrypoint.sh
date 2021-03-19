@@ -14,8 +14,30 @@ function check_db_access {
     done
 }
 
+
+CURRENT_VERSION=`cat /usr/local/tomcat/jahia-version.txt`
+
 if [ ! -f "/usr/local/tomcat/conf/configured" ]; then
     cp -a ${INITIAL_FACTORY_DATA}/* ${FACTORY_DATA}
+
+    if [ -f ${FACTORY_DATA}/info/version.properties ]; then
+      # Read version.properties, will put previous version in $version
+      source ${FACTORY_DATA}/info/version.properties
+      # Manually remove bundles-deployed if we are in a migration to version (<7.3.7) or (>=8.0.0 <8.0.2). Otherwise let migration scripts do their job.
+      if [ "${version}" != "${CURRENT_VERSION}" ] && $(dpkg --compare-versions ${CURRENT_VERSION} lt 7.3.7 || dpkg --compare-versions ${CURRENT_VERSION} ge 8.0.0 && dpkg --compare-versions ${CURRENT_VERSION} lt 8.0.2); then
+        echo "*** Migration from ${version} to ${CURRENT_VERSION} detected, cleaning all previous bundles and instructing for modules reinstallation ***"
+        rm -Rf ${FACTORY_DATA}/bundles-deployed
+        RESTORE_MODULE_STATES="true"
+        RESTORE_PERSISTED_CONFIGURATION="true"
+      fi
+    fi
+
+    # Create version.properties file for version (<7.3.8) and (>=8.0.0 <8.0.2)
+    if $(dpkg --compare-versions ${CURRENT_VERSION} lt 7.3.8 || dpkg --compare-versions ${CURRENT_VERSION} ge 8.0.0 && dpkg --compare-versions ${CURRENT_VERSION} lt 8.0.2); then
+      mkdir -p ${FACTORY_DATA}/info
+      echo -n version=`cat /usr/local/tomcat/jahia-version.txt` > ${FACTORY_DATA}/info/version.properties
+    fi
+
     touch "/usr/local/tomcat/conf/configured"
 fi
 
@@ -74,7 +96,7 @@ sed -i 's/pattern="%h /pattern="%{org.apache.catalina.AccessLog.RemoteAddr}r /' 
 sed -i 's/prefix="localhost_access_log"/prefix="access_log" rotatable="true" maxDays="'$LOG_MAX_DAYS'"/g' /usr/local/tomcat/conf/server.xml
 sed -i 's/^\([^#].*\.maxDays\s*=\s*\).*$/\1'$LOG_MAX_DAYS'/' /usr/local/tomcat/conf/logging.properties
 
-if $(dpkg --compare-versions `cat /usr/local/tomcat/jahia-version.txt` lt 8.0.1); then
+if $(dpkg --compare-versions ${CURRENT_VERSION} lt 8.0.1); then
   echo "Update ${JMANAGER_USER} password..."
   python3 /usr/local/bin/reset-jahia-tools-manager-password.py "$(echo -n $JMANAGER_PASS|base64)" /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
   sed 's/${JMANAGER_USER}/'$JMANAGER_USER'/' -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
