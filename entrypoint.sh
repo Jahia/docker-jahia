@@ -14,6 +14,33 @@ function check_db_access {
     done
 }
 
+
+CURRENT_VERSION=`cat /usr/local/tomcat/jahia-version.txt`
+
+if [ ! -f "/usr/local/tomcat/conf/configured" ]; then
+    cp -a ${INITIAL_FACTORY_DATA}/* ${FACTORY_DATA}
+
+    if [ -f ${FACTORY_DATA}/info/version.properties ]; then
+      # Read version.properties, will put previous version in $version
+      source ${FACTORY_DATA}/info/version.properties
+      # Manually remove bundles-deployed if we are in a migration to version (<7.3.7) or (>=8.0.0 <8.0.2). Otherwise let migration scripts do their job.
+      if [ "${version}" != "${CURRENT_VERSION}" ] && $(dpkg --compare-versions ${CURRENT_VERSION} lt 7.3.7 || dpkg --compare-versions ${CURRENT_VERSION} ge 8.0.0 && dpkg --compare-versions ${CURRENT_VERSION} lt 8.0.2); then
+        echo "*** Migration from ${version} to ${CURRENT_VERSION} detected, cleaning all previous bundles and instructing for modules reinstallation ***"
+        rm -Rf ${FACTORY_DATA}/bundles-deployed
+        RESTORE_MODULE_STATES="true"
+        RESTORE_PERSISTED_CONFIGURATION="true"
+      fi
+    fi
+
+    # Create version.properties file for version (<7.3.8) and (>=8.0.0 <8.0.2)
+    if $(dpkg --compare-versions ${CURRENT_VERSION} lt 7.3.8 || dpkg --compare-versions ${CURRENT_VERSION} ge 8.0.0 && dpkg --compare-versions ${CURRENT_VERSION} lt 8.0.2); then
+      mkdir -p ${FACTORY_DATA}/info
+      echo -n version=`cat /usr/local/tomcat/jahia-version.txt` > ${FACTORY_DATA}/info/version.properties
+    fi
+
+    touch "/usr/local/tomcat/conf/configured"
+fi
+
 echo "Update jahia.properties..."
 sed -e 's,${FACTORY_DATA},'$FACTORY_DATA',' \
     -e "s/^#\?\s*\(operatingMode\s*=\).*/\1 $OPERATING_MODE/" \
@@ -60,8 +87,8 @@ sed -e "s/^#\?\s*\(processingServer\s*=\).*/\1 ${PROCESSING_SERVER}/" \
     -e "s/\(cluster.node.serverId\s*=\).*/\1 jahia-$(hostname)/" \
     -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.node.properties
 
-echo "Update /data/digital-factory-data/karaf/etc/org.apache.karaf.cellar.groups.cfg..."
-sed -i 's/\(^default.config.sync = \)cluster/\1disabled/' /data/digital-factory-data/karaf/etc/org.apache.karaf.cellar.groups.cfg
+echo "Update ${FACTORY_DATA}/karaf/etc/org.apache.karaf.cellar.groups.cfg..."
+sed -i 's/\(^default.config.sync = \)cluster/\1disabled/' ${FACTORY_DATA}/karaf/etc/org.apache.karaf.cellar.groups.cfg
 
 echo "Update /usr/local/tomcat/conf/server.xml..."
 sed -i '/<!-- Access log processes all example./i \\t<!-- Remote IP Valve -->\n \t<Valve className="org.apache.catalina.valves.RemoteIpValve" protocolHeader="X-Forwarded-Proto" />\n' /usr/local/tomcat/conf/server.xml
@@ -69,7 +96,7 @@ sed -i 's/pattern="%h /pattern="%{org.apache.catalina.AccessLog.RemoteAddr}r /' 
 sed -i 's/prefix="localhost_access_log"/prefix="access_log" rotatable="true" maxDays="'$LOG_MAX_DAYS'"/g' /usr/local/tomcat/conf/server.xml
 sed -i 's/^\([^#].*\.maxDays\s*=\s*\).*$/\1'$LOG_MAX_DAYS'/' /usr/local/tomcat/conf/logging.properties
 
-if $(dpkg --compare-versions `cat /usr/local/tomcat/jahia-version.txt` lt 8.0.1); then
+if $(dpkg --compare-versions ${CURRENT_VERSION} lt 8.0.1); then
   echo "Update ${JMANAGER_USER} password..."
   python3 /usr/local/bin/reset-jahia-tools-manager-password.py "$(echo -n $JMANAGER_PASS|base64)" /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
   sed 's/${JMANAGER_USER}/'$JMANAGER_USER'/' -i /usr/local/tomcat/conf/digital-factory-config/jahia/jahia.properties
@@ -103,7 +130,7 @@ case "$DBMS_TYPE" in
         tables_list=$(mysql -h $DB_HOST -u $DB_USER -p$DB_PASS --protocol=tcp -e "show tables" $DB_NAME)
         if [ "$tables_list" == "" ]; then
             echo "Database is empty. Going to initialize the database schema..."
-            mysql -h $DB_HOST -u $DB_USER -p$DB_PASS $DB_NAME --protocol=tcp <<< $(cat /data/digital-factory-data/db/sql/schema/mysql/01*)
+            mysql -h $DB_HOST -u $DB_USER -p$DB_PASS $DB_NAME --protocol=tcp <<< $(cat ${FACTORY_DATA}/db/sql/schema/mysql/01*)
         fi
 
         testdb_result="$(mysql -u $DB_USER -p$DB_PASS -h $DB_HOST -D $DB_NAME --protocol=tcp -e "select count(REVISION_ID) from JR_J_LOCAL_REVISIONS;" -s)"
@@ -124,7 +151,7 @@ case "$DBMS_TYPE" in
 
         tables_list=$(PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "\dt" 2> /dev/null)
         if [ "$tables_list" == "" ]; then
-            files_path="/data/digital-factory-data/db/sql/schema/postgresql"
+            files_path="${FACTORY_DATA}/db/sql/schema/postgresql"
             for file in $files_path/01*.sql; do
                 echo "Database is empty. Going to initialize the database schema..."
                 PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -f $file;

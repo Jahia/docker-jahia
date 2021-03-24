@@ -41,6 +41,7 @@ ARG C_GROUP="tomcat"
 
 ENV RESTORE_MODULE_STATES="true"
 ENV RESTORE_PERSISTED_CONFIGURATION="true"
+ENV INITIAL_FACTORY_DATA="/usr/local/tomcat/digital-factory-data"
 ENV FACTORY_DATA="/data/digital-factory-data"
 ENV FACTORY_CONFIG="/usr/local/tomcat/conf/digital-factory-config"
 ENV PROCESSING_SERVER="$PROCESSING_SERVER"
@@ -99,6 +100,7 @@ RUN printf "Start Jahia's installation...\n" \
     && rm -f installer.jar config_*.xml maven.zip \
     && mv /data/jahia/tomcat/webapps/* /usr/local/tomcat/webapps \
     && mv /data/jahia/tomcat/lib/* /usr/local/tomcat/lib/ \
+    && mv ${FACTORY_DATA} ${INITIAL_FACTORY_DATA} \
     && chmod +x /entrypoint.sh \
     && sed -e "s#common.loader=\"\\\$#common.loader=\"/usr/local/tomcat/conf/digital-factory-config\",\"\$#g" \
         -i /usr/local/tomcat/conf/catalina.properties \
@@ -110,11 +112,11 @@ RUN unzip -aap /usr/local/tomcat/webapps/ROOT/WEB-INF/lib/jahia-impl-*.jar META-
     | awk '$1~/^Implementation-Version/ {split($2,a,"-");print a[1]}' > /usr/local/tomcat/jahia-version.txt \
     && echo Current Jahia Version : "$(cat /usr/local/tomcat/jahia-version.txt)"
 ADD $MODULES_BASE_URL/healthcheck/$HEALTHCHECK_VER/healthcheck-$HEALTHCHECK_VER.jar \
-        $FACTORY_DATA/modules/healthcheck-$HEALTHCHECK_VER.jar
+        ${INITIAL_FACTORY_DATA}/modules/healthcheck-$HEALTHCHECK_VER.jar
 
 COPY optional_modules* /tmp
 ## allows the Docker build to continue if no modules were provided
-RUN mv /tmp/*.jar /data/digital-factory-data/modules || true
+RUN mv /tmp/*.jar ${FACTORY_DATA}/modules || true
 
 # Add CORS filter for GraphQL queries
 COPY filter_graphql_update.xml /tmp
@@ -138,7 +140,8 @@ RUN echo "Retrieve latest ImageMagick binaries..." \
 # add container user and grant permissions
 RUN groupadd -g 999 $C_GROUP
 RUN useradd -r -u 999 -g $C_GROUP $C_USER -d $CATALINA_BASE/temp -m
-RUN chown -R $C_USER: $CATALINA_BASE $FACTORY_DATA \
+RUN mkdir -p $FACTORY_DATA \
+    && chown -R $C_USER: $CATALINA_BASE /data \
     && chown $C_USER: /entrypoint.sh
 RUN $DS_IN_DB || ( mkdir -p $DS_PATH \
     && chown -R $C_USER:$C_GROUP $DS_PATH )
