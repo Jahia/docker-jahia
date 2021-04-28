@@ -67,6 +67,8 @@ COPY entrypoint.sh installer.jar* ./
 
 COPY reset-jahia-tools-manager-password.py /usr/local/bin
 
+RUN groupadd -g 999 $C_GROUP
+RUN useradd -r -u 999 -g $C_GROUP $C_USER -d $CATALINA_BASE/temp -m
 
 RUN apt-get update \
     && packages="python3 jq ncat libx11-6 libharfbuzz0b libfribidi0" \
@@ -100,7 +102,12 @@ RUN printf "Start Jahia's installation...\n" \
     && rm -f installer.jar config_*.xml maven.zip \
     && mv /data/jahia/tomcat/webapps/* /usr/local/tomcat/webapps \
     && mv /data/jahia/tomcat/lib/* /usr/local/tomcat/lib/ \
+    && chown -R $C_USER: $CATALINA_BASE \
+    && chown -R $C_USER: /data \
     && mv ${FACTORY_DATA} ${INITIAL_FACTORY_DATA} \
+    && mkdir -p $FACTORY_DATA \
+    && chown -R $C_USER: /data \
+    && chown $C_USER: /entrypoint.sh \
     && chmod +x /entrypoint.sh \
     && sed -e "s#common.loader=\"\\\$#common.loader=\"/usr/local/tomcat/conf/digital-factory-config\",\"\$#g" \
         -i /usr/local/tomcat/conf/catalina.properties \
@@ -137,14 +144,10 @@ RUN echo "Retrieve latest ImageMagick binaries..." \
     && mv squashfs-root/usr/* /opt/magick \
     && rm -rf /opt/magick/share/ squashfs-root/ ./magick
 
-# add container user and grant permissions
-RUN groupadd -g 999 $C_GROUP
-RUN useradd -r -u 999 -g $C_GROUP $C_USER -d $CATALINA_BASE/temp -m
-RUN mkdir -p $FACTORY_DATA \
-    && chown -R $C_USER: $CATALINA_BASE /data \
-    && chown $C_USER: /entrypoint.sh
+# create $DS_PATH if needed
 RUN $DS_IN_DB || ( mkdir -p $DS_PATH \
     && chown -R $C_USER:$C_GROUP $DS_PATH )
+
 USER $C_USER
 
 EXPOSE 8080
