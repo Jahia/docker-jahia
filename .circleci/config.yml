@@ -12,7 +12,6 @@ version: 2.1
 orbs:
   docker: circleci/docker@1.0.1
   slack: circleci/slack@3.4.2
-  anchore: anchore/anchore-engine@1.8.1
 
 commands:
   build_jahia:
@@ -80,59 +79,6 @@ commands:
             ':alert: Building jahia:<< parameters.jver >><< parameters.tag_suffix >> has failed !'
           success_message: |
             ':building_construction: Building jahia:<< parameters.jver >><< parameters.tag_suffix >> successfully.'
-  scan_jahia:
-    description: "Pull and scan a docker image"
-    parameters:
-      repo:
-        type: string
-        default: jahia/jahia_test
-      jver:
-        type: string
-      tag_suffix:
-        type: string
-      registry_user:
-        type: string
-      registry_pass:
-        type: string
-      slack_channel:
-        type: string
-      registry_name:
-        type: string
-        default: "docker.io"
-      analyze_timeout:
-        type: string
-        default: "300"
-      policy_failure:
-        type: boolean
-        default: true
-    steps:
-      - run:
-          command: |
-            apk update &&
-            apk add bash curl
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - checkout
-      - anchore/start_engine
-      - anchore/add_private_registry:
-          registry_name: "<< parameters.registry_name >>"
-          registry_user: "<< parameters.registry_user >>"
-          registry_pass: "<< parameters.registry_pass >>"
-      - anchore/analyze_image:
-          image_name: "<< parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >>"
-          timeout: "<< parameters.analyze_timeout >>"
-      - anchore/policy_evaluation:
-          image_name: "<< parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >>"
-          policy_failure: "<< parameters.policy_failure >>"
-      - anchore/parse_reports
-      - store_artifacts:
-          path: anchore-reports
-      - slack/status:
-          channel: "<< parameters.slack_channel >>"
-          failure_message: |
-            ':alert: Scan for << parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >> has failed'
-          success_message: |
-            ':mag: Scanned  << parameters.repo >>:<< parameters.jver >><< parameters.tag_suffix >> successfully'
 
   test_jahia:
     description: "Pull jahia images from private repo and test them"
@@ -342,22 +288,6 @@ jobs:
           jver: "8.0.2.0"
           tag_suffix: "<< parameters.suffixend >>"
           base_url: "https://downloads.jahia.com/downloads/jahia/jahia8.0.2/Jahia-EnterpriseDistribution-8.0.2.0-r60910.4774.jar"
-  scan_latest:
-    parameters:
-      slack_channel:
-        type: string
-        default: "team-cloud-notif"
-      jver:
-        type: string
-      <<: *suffixend_def_param
-    executor: anchore/anchore_engine
-    steps:
-      - scan_jahia:
-          jver: "<< parameters.jver >>"
-          tag_suffix: "<< parameters.suffixend >>"
-          registry_user: "$DOCKER_LOGIN"
-          registry_pass: "$DOCKER_PASSWORD"
-          slack_channel: "<< parameters.slack_channel >>"
   test_8020:
     <<: *job_def_param
     docker:
@@ -871,13 +801,3 @@ workflows:
           requires:
             - human_validation
           <<: *job_options
-  weekly_scan:
-    triggers:
-      - schedule:
-          cron: "0 1 * * 0"
-          <<: *filters
-    jobs:
-      - scan_latest:
-          <<: *job_options
-          slack_channel: "team-cloud-security"
-          jver: "8.0.2.0"
