@@ -370,6 +370,38 @@ jobs:
           jver: "8.0.0.0"
           tag_suffix: "<< parameters.suffixend >>"
   ##########################################
+################################## 7.3.10.0
+  build_73100:
+    <<: *job_def_param
+    executor: docker/docker
+    steps:
+      - build_jahia:
+          jver: "7.3.10.0"
+          xml_suffix: ""
+          tag_suffix: "<< parameters.suffixend >>"
+          base_url: "https://downloads.jahia.com/downloads/jahia/jahia7.3.10/Jahia-EnterpriseDistribution-7.3.10.0-rede1041.4992.jar"
+          healthcheck_ver: "1.2.1"
+  test_73100:
+    <<: *job_def_param
+    docker:
+      - image: jahia/jahia_test:7.3.10.0<< parameters.suffixend >>
+        auth:
+          username: $DOCKER_LOGIN
+          password: $DOCKER_PASSWORD
+        <<: *environment_jahia
+      - <<: *db_container
+    steps:
+      - test_jahia:
+          jver: "7.3.10.0"
+          tag_suffix: "<< parameters.suffixend >>"
+  publish_73100:
+    <<: *job_def_param
+    executor: docker/docker
+    steps:
+      - publish_image:
+          jver: "7.3.10.0"
+          tag_suffix: "<< parameters.suffixend >>"
+  ##########################################
 ################################## 7.3.9.0
   build_7390:
     <<: *job_def_param
@@ -662,6 +694,13 @@ workflows:
           requires:
             - build_8000
           <<: *job_options
+      ############# 7.3.10.0
+      - build_73100:
+          <<: *job_options
+      - test_73100:
+          requires:
+            - build_73100
+          <<: *job_options         
       ############# 7.3.9.0
       - build_7390:
           <<: *job_options
