@@ -765,6 +765,7 @@ workflows:
             - test_8020
             - test_8010
             - test_8000
+            - test_73100
             - test_7390
             - test_7380
             - test_7370
@@ -782,6 +783,7 @@ workflows:
             - test_8020
             - test_8010
             - test_8000
+            - test_73100
             - test_7390
             - test_7380
             - test_7370
@@ -808,10 +810,14 @@ workflows:
           requires:
             - human_validation
           <<: *job_options
+      - publish_73100:
+          requires:
+            - human_validation
+          <<: *job_options    
       - publish_7390:
           requires:
             - human_validation
-          <<: *job_options           
+          <<: *job_options                  
       - publish_7380:
           requires:
             - human_validation
