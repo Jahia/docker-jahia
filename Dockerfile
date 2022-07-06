@@ -68,7 +68,8 @@ COPY entrypoint.sh installer.jar* ./
 COPY reset-jahia-tools-manager-password.py /usr/local/bin
 
 
-RUN apt-get update \
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 871920D1991BC93C \
+    && apt-get update \
     && packages="python3 jq ncat libx11-6 libharfbuzz0b libfribidi0" \
     && case "$DBMS_TYPE" in \
         "mariadb") packages="$packages mariadb-client";; \
