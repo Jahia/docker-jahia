@@ -14,7 +14,7 @@ ARG LIBREOFFICE="false"
 ARG MAVEN_VER="3.6.3"
 ARG MAVEN_BASE_URL="https://mirrors.ircam.fr/pub/apache/maven/maven-3"
 ARG MODULES_BASE_URL="https://store.jahia.com/cms/mavenproxy/private-app-store/org/jahia/modules"
-ARG IMAGEMAGICK_BINARIES_DOWNLOAD_URL="https://imagemagick.org/download/binaries/magick"
+ARG IMAGEMAGICK_BINARIES_DOWNLOAD_URL="https://imagemagick.org/archive/binaries/magick"
 ARG LOG_MAX_DAYS="5"
 
 # Jahia's properties
@@ -69,7 +69,7 @@ COPY reset-jahia-tools-manager-password.py /usr/local/bin
 
 
 RUN apt-get update \
-    && packages="python3 jq ncat libx11-6 libharfbuzz0b libfribidi0" \
+    && packages="unzip wget python3 jq ncat libx11-6 libharfbuzz0b libfribidi0" \
     && case "$DBMS_TYPE" in \
         "mariadb") packages="$packages mariadb-client";; \
         "postgresql") packages="$packages postgresql-client";; \
