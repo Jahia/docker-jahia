@@ -69,7 +69,7 @@ COPY reset-jahia-tools-manager-password.py /usr/local/bin
 
 
 RUN apt-get update \
-    && packages="python3 jq ncat libx11-6 libharfbuzz0b libfribidi0" \
+    && packages="wget python3 jq ncat libx11-6 libharfbuzz0b libfribidi0" \
     && case "$DBMS_TYPE" in \
         "mariadb") packages="$packages mariadb-client";; \
         "postgresql") packages="$packages postgresql-client";; \
