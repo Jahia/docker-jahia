@@ -103,7 +103,7 @@ if $(dpkg --compare-versions ${CURRENT_VERSION} lt 8.0.1); then
 fi
 
 echo "Update setenv.sh"
-echo "JAVA_OPTS=\"-XX:+UseParallelGC -Xlog:gc::time,uptime,level,pid,tid,tags -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=7199 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -XX:+HeapDumpOnOutOfMemoryError -XX:+PrintConcurrentLocks -XX:SurvivorRatio=8\"" > /usr/local/tomcat/bin/setenv.sh
+echo "JAVA_OPTS=\"-XX:+UseParallelGC -Xlog:gc::time,uptime,level,pid,tid,tags -XX:+HeapDumpOnOutOfMemoryError -XX:+PrintConcurrentLocks -XX:SurvivorRatio=8\"" > /usr/local/tomcat/bin/setenv.sh
 echo 'export JAVA_OPTS="$JAVA_OPTS -XX:+UseContainerSupport -XX:MaxRAMPercentage=$MAX_RAM_PERCENTAGE -DDB_HOST='$DB_HOST' -DDB_PASS='$DB_PASS' -DDB_NAME='$DB_NAME' -DDB_USER='$DB_USER'"' \
     >> /usr/local/tomcat/bin/setenv.sh
 chmod +x /usr/local/tomcat/bin/setenv.sh \
